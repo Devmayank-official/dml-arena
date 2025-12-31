@@ -12,6 +12,7 @@ interface TourContextValue {
   nextStep: () => void;
   prevStep: () => void;
   skipTour: () => void;
+  skipTourPermanently: () => void;
   completeTour: () => void;
 }
 
@@ -31,6 +32,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
         onNext={tour.nextStep}
         onPrev={tour.prevStep}
         onSkip={tour.skipTour}
+        onSkipPermanently={tour.skipTourPermanently}
       />
     </TourContext.Provider>
   );

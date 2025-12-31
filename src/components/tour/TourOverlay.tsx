@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { TourStep } from '@/hooks/useTour';
 
 interface TourOverlayProps {
@@ -12,6 +13,7 @@ interface TourOverlayProps {
   onNext: () => void;
   onPrev: () => void;
   onSkip: () => void;
+  onSkipPermanently: () => void;
 }
 
 interface TargetRect {
@@ -29,9 +31,11 @@ export function TourOverlay({
   onNext,
   onPrev,
   onSkip,
+  onSkipPermanently,
 }: TourOverlayProps) {
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,7 +53,6 @@ export function TourOverlay({
           height: rect.height + padding * 2,
         });
 
-        // Calculate tooltip position
         const tooltipWidth = 320;
         const tooltipHeight = 200;
         const margin = 16;
@@ -83,8 +86,6 @@ export function TourOverlay({
         }
 
         setTooltipStyle(style);
-
-        // Scroll element into view
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     };
@@ -102,6 +103,14 @@ export function TourOverlay({
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
+  const handleSkip = () => {
+    if (dontShowAgain) {
+      onSkipPermanently();
+    } else {
+      onSkip();
+    }
+  };
+
   return (
     <AnimatePresence>
       {isActive && targetRect && (
@@ -113,7 +122,7 @@ export function TourOverlay({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100] pointer-events-auto"
-            onClick={onSkip}
+            onClick={handleSkip}
             style={{
               background: `radial-gradient(
                 ellipse ${targetRect.width + 40}px ${targetRect.height + 40}px 
@@ -178,16 +187,31 @@ export function TourOverlay({
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {stepData.title}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                   {stepData.description}
                 </p>
+
+                {/* Don't show again checkbox */}
+                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+                  <Checkbox
+                    id="dont-show-again"
+                    checked={dontShowAgain}
+                    onCheckedChange={(checked) => setDontShowAgain(checked === true)}
+                  />
+                  <label
+                    htmlFor="dont-show-again"
+                    className="text-xs text-muted-foreground cursor-pointer select-none"
+                  >
+                    Don't show this tour again
+                  </label>
+                </div>
 
                 {/* Navigation */}
                 <div className="flex items-center justify-between">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onSkip}
+                    onClick={handleSkip}
                     className="text-muted-foreground hover:text-foreground"
                   >
                     Skip tour
