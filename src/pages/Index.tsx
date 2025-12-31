@@ -240,7 +240,7 @@ export default function Index() {
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
         {/* Model Selector */}
-        <section className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6">
+        <section className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6" data-tour="model-selector">
           <ModelSelector
             selectedModels={selectedModels}
             onToggleModel={handleToggleModel}
@@ -250,7 +250,7 @@ export default function Index() {
         </section>
 
         {/* Deep Mode Toggle */}
-        <section className="max-w-3xl mx-auto">
+        <section className="max-w-3xl mx-auto" data-tour="deep-mode">
           <DeepModeToggle
             enabled={deepMode} 
             onToggle={setDeepMode}
@@ -260,7 +260,7 @@ export default function Index() {
         </section>
 
         {/* Chat Input */}
-        <section className="max-w-3xl mx-auto">
+        <section className="max-w-3xl mx-auto" data-tour="chat-input">
           <ChatInput
             onSend={handleSendMessage}
             isLoading={isProcessing}
