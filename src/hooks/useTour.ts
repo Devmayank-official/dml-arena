@@ -84,7 +84,15 @@ export function useTour() {
   }, [currentStep]);
 
   const skipTour = useCallback(() => {
-    completeTour();
+    setIsActive(false);
+    setCurrentStep(0);
+  }, []);
+
+  const skipTourPermanently = useCallback(() => {
+    setIsActive(false);
+    setCurrentStep(0);
+    setHasCompletedTour(true);
+    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
   }, []);
 
   const fireConfetti = useCallback(() => {
@@ -139,6 +147,7 @@ export function useTour() {
     nextStep,
     prevStep,
     skipTour,
+    skipTourPermanently,
     completeTour,
   };
 }
