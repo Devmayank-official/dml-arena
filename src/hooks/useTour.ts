@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import confetti from 'canvas-confetti';
 
 const TOUR_STORAGE_KEY = 'compareai-tour-completed';
 
@@ -86,12 +87,47 @@ export function useTour() {
     completeTour();
   }, []);
 
+  const fireConfetti = useCallback(() => {
+    // Center burst
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#00d4ff', '#a855f7', '#22c55e', '#f59e0b', '#ec4899'],
+    });
+
+    // Left side
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#00d4ff', '#a855f7', '#22c55e'],
+      });
+    }, 150);
+
+    // Right side
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#f59e0b', '#ec4899', '#00d4ff'],
+      });
+    }, 300);
+  }, []);
+
   const completeTour = useCallback(() => {
     setIsActive(false);
     setCurrentStep(0);
     setHasCompletedTour(true);
     localStorage.setItem(TOUR_STORAGE_KEY, 'true');
-  }, []);
+    
+    // Fire confetti celebration
+    fireConfetti();
+  }, [fireConfetti]);
 
   return {
     isActive,
