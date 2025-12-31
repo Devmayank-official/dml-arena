@@ -1,0 +1,105 @@
+import { Download, FileJson, FileText, FileCode, File } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { exportAsJSON, exportAsYAML, exportAsXML, exportAsMarkdown, exportAsPDF } from '@/lib/exportUtils';
+import { useToast } from '@/hooks/use-toast';
+
+interface TokenUsage {
+  prompt: number;
+  completion: number;
+  total: number;
+}
+
+interface ModelResponse {
+  model: string;
+  response: string;
+  error?: string;
+  duration: number;
+  tokens?: TokenUsage;
+}
+
+interface ExportDropdownProps {
+  query: string;
+  responses: ModelResponse[];
+  createdAt?: string;
+  disabled?: boolean;
+}
+
+export function ExportDropdown({ query, responses, createdAt, disabled }: ExportDropdownProps) {
+  const { toast } = useToast();
+
+  const handleExport = async (format: 'json' | 'yaml' | 'xml' | 'md' | 'pdf') => {
+    const data = { query, responses, createdAt };
+    
+    try {
+      switch (format) {
+        case 'json':
+          exportAsJSON(data);
+          break;
+        case 'yaml':
+          exportAsYAML(data);
+          break;
+        case 'xml':
+          exportAsXML(data);
+          break;
+        case 'md':
+          exportAsMarkdown(data);
+          break;
+        case 'pdf':
+          await exportAsPDF(data);
+          break;
+      }
+      
+      if (format !== 'pdf') {
+        toast({
+          title: 'Export successful',
+          description: `Downloaded as ${format.toUpperCase()} file`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Export failed',
+        description: 'Could not export the comparison',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" disabled={disabled} className="gap-2">
+          <Download className="h-4 w-4" />
+          Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => handleExport('pdf')} className="gap-2 cursor-pointer">
+          <File className="h-4 w-4" />
+          PDF (Print)
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport('json')} className="gap-2 cursor-pointer">
+          <FileJson className="h-4 w-4" />
+          JSON
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport('yaml')} className="gap-2 cursor-pointer">
+          <FileCode className="h-4 w-4" />
+          YAML
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport('xml')} className="gap-2 cursor-pointer">
+          <FileCode className="h-4 w-4" />
+          XML
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport('md')} className="gap-2 cursor-pointer">
+          <FileText className="h-4 w-4" />
+          Markdown
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
