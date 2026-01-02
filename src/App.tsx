@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TourProvider } from "@/contexts/TourContext";
 import Landing from "./pages/Landing";
+import Pricing from "./pages/Pricing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SharedResult from "./pages/SharedResult";
@@ -27,6 +28,9 @@ const App = () => (
           <Routes>
             {/* Landing page - public */}
             <Route path="/" element={<Landing />} />
+            
+            {/* Pricing page - public */}
+            <Route path="/pricing" element={<Pricing />} />
             
             {/* Auth page - public */}
             <Route path="/auth" element={<Auth />} />
