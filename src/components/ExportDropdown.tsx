@@ -1,4 +1,4 @@
-import { Download, FileJson, FileText, FileCode, File } from 'lucide-react';
+import { Download, FileJson, FileText, FileCode, File, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,6 +8,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { exportAsJSON, exportAsYAML, exportAsXML, exportAsMarkdown, exportAsPDF } from '@/lib/exportUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface TokenUsage {
   prompt: number;
@@ -32,6 +40,7 @@ interface ExportDropdownProps {
 
 export function ExportDropdown({ query, responses, createdAt, disabled }: ExportDropdownProps) {
   const { toast } = useToast();
+  const { canExport } = useSubscription();
 
   const handleExport = async (format: 'json' | 'yaml' | 'xml' | 'md' | 'pdf') => {
     const data = { query, responses, createdAt };
@@ -69,6 +78,27 @@ export function ExportDropdown({ query, responses, createdAt, disabled }: Export
       });
     }
   };
+
+  if (!canExport) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="sm" disabled className="gap-2 opacity-50">
+              <Lock className="h-4 w-4" />
+              Export
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">
+                Pro
+              </Badge>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Upgrade to Pro to export results</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <DropdownMenu>

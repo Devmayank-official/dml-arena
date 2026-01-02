@@ -1,6 +1,6 @@
 import { AI_MODELS, AIModel } from '@/lib/models';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronUp, Check, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Info, Lock } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -14,6 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
 
 interface ModelSelectorProps {
   selectedModels: string[];
@@ -29,6 +31,8 @@ export function ModelSelector({
   onDeselectAll 
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { canUseModel, isPro } = useSubscription();
+  
   const openaiModels = AI_MODELS.filter(m => m.provider === 'openai');
   const googleModels = AI_MODELS.filter(m => m.provider === 'google');
 
@@ -36,12 +40,32 @@ export function ModelSelector({
     .filter(m => selectedModels.includes(m.id))
     .map(m => m.name);
 
+  const handleSelectAll = () => {
+    if (isPro) {
+      onSelectAll();
+    } else {
+      // Only select free models
+      FREE_PLAN_LIMITS.allowedModels.forEach(modelId => {
+        if (!selectedModels.includes(modelId)) {
+          onToggleModel(modelId);
+        }
+      });
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">Select Models</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-muted-foreground">Select Models</h3>
+          {!isPro && (
+            <Badge variant="secondary" className="text-xs">
+              Free: 2 models only
+            </Badge>
+          )}
+        </div>
         <span className="text-xs text-muted-foreground">
-          {selectedModels.length} of {AI_MODELS.length} selected
+          {selectedModels.length} of {isPro ? AI_MODELS.length : FREE_PLAN_LIMITS.allowedModels.length} selected
         </span>
       </div>
 
@@ -86,10 +110,10 @@ export function ModelSelector({
             <span className="text-xs font-medium text-muted-foreground">Quick Actions</span>
             <div className="flex gap-2">
               <button
-                onClick={onSelectAll}
+                onClick={handleSelectAll}
                 className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
               >
-                Select All
+                Select {isPro ? 'All' : 'Free'}
               </button>
               <span className="text-muted-foreground/30">|</span>
               <button
@@ -114,6 +138,7 @@ export function ModelSelector({
                   model={model}
                   isSelected={selectedModels.includes(model.id)}
                   onToggle={() => onToggleModel(model.id)}
+                  isLocked={!canUseModel(model.id)}
                 />
               ))}
             </div>
@@ -130,6 +155,7 @@ export function ModelSelector({
                   model={model}
                   isSelected={selectedModels.includes(model.id)}
                   onToggle={() => onToggleModel(model.id)}
+                  isLocked={!canUseModel(model.id)}
                 />
               ))}
             </div>
@@ -144,29 +170,43 @@ interface DropdownModelItemProps {
   model: AIModel;
   isSelected: boolean;
   onToggle: () => void;
+  isLocked: boolean;
 }
 
-function DropdownModelItem({ model, isSelected, onToggle }: DropdownModelItemProps) {
+function DropdownModelItem({ model, isSelected, onToggle, isLocked }: DropdownModelItemProps) {
   const providerColor = model.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500';
   
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={onToggle}
+        onClick={isLocked ? undefined : onToggle}
+        disabled={isLocked}
         className={cn(
           "flex-1 flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-left",
-          "hover:bg-secondary/50",
-          isSelected && "bg-primary/10"
+          isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-secondary/50",
+          isSelected && !isLocked && "bg-primary/10"
         )}
       >
         <div className={cn(
           "w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+          isLocked ? "border-muted-foreground/30 bg-muted" :
           isSelected ? "bg-primary border-primary" : "border-muted-foreground/30"
         )}>
-          {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+          {isLocked ? (
+            <Lock className="h-3 w-3 text-muted-foreground" />
+          ) : isSelected ? (
+            <Check className="h-3 w-3 text-primary-foreground" />
+          ) : null}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm">{model.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-sm">{model.name}</p>
+            {isLocked && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                Pro
+              </Badge>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground truncate">{model.description}</p>
         </div>
       </button>
@@ -182,6 +222,7 @@ function DropdownModelItem({ model, isSelected, onToggle }: DropdownModelItemPro
               <div className="flex items-center gap-2">
                 <div className={cn("w-2 h-2 rounded-full", providerColor)} />
                 <span className="font-semibold">{model.name}</span>
+                {isLocked && <Badge variant="secondary" className="text-[10px]">Pro Only</Badge>}
               </div>
               <p className="text-xs">{model.description}</p>
               <p className="text-xs text-muted-foreground">

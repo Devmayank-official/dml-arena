@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { Brain, Minus, Plus, ChevronDown, ChevronUp, Zap, Target, Flame, Settings2 } from 'lucide-react';
+import { Brain, Minus, Plus, ChevronDown, ChevronUp, Zap, Target, Flame, Settings2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
 
 export interface DeepModeSettings {
   rounds: number;
@@ -134,6 +136,7 @@ function getActivePreset(settings: DeepModeSettings): PresetMode | null {
 
 export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }: DeepModeToggleProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const { canUseDeepMode, isPro } = useSubscription();
   const activePreset = getActivePreset(settings);
 
   const applyPreset = (preset: PresetMode) => {
@@ -143,6 +146,13 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
       customPersona: undefined,
     });
     setAdvancedOpen(false);
+  };
+
+  const handleToggle = (value: boolean) => {
+    if (value && !canUseDeepMode) {
+      return; // Don't enable if not allowed
+    }
+    onToggle(value);
   };
 
   const decreaseRounds = () => {
@@ -156,7 +166,8 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
   return (
     <div className={cn(
       "p-3 sm:p-4 rounded-xl border transition-all duration-300",
-      enabled ? "border-accent bg-accent/10" : "border-border bg-card"
+      enabled ? "border-accent bg-accent/10" : "border-border bg-card",
+      !canUseDeepMode && "opacity-60"
     )}>
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -164,23 +175,37 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
             "w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-colors shrink-0",
             enabled ? "bg-accent/20" : "bg-secondary"
           )}>
-            <Brain className={cn("h-4 w-4 sm:h-5 sm:w-5", enabled ? "text-accent" : "text-muted-foreground")} />
+            {canUseDeepMode ? (
+              <Brain className={cn("h-4 w-4 sm:h-5 sm:w-5", enabled ? "text-accent" : "text-muted-foreground")} />
+            ) : (
+              <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Deep Mode</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium">Deep Mode</p>
+              {!canUseDeepMode && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  Pro
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate">
-              {enabled 
-                ? activePreset 
-                  ? `${PRESETS[activePreset].label} • ${settings.rounds} rounds`
-                  : `Custom • ${settings.rounds} rounds`
-                : "AI models debate & synthesize"
+              {!canUseDeepMode
+                ? "Upgrade to Pro for AI debates"
+                : enabled 
+                  ? activePreset 
+                    ? `${PRESETS[activePreset].label} • ${settings.rounds} rounds`
+                    : `Custom • ${settings.rounds} rounds`
+                  : "AI models debate & synthesize"
               }
             </p>
           </div>
         </div>
         <Switch
           checked={enabled}
-          onCheckedChange={onToggle}
+          onCheckedChange={handleToggle}
+          disabled={!canUseDeepMode}
           className="data-[state=checked]:bg-accent shrink-0"
         />
       </div>

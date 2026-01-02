@@ -1,16 +1,25 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
 import { useTourContext } from '@/contexts/TourContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function Header() {
   const { startTour } = useTourContext();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
+  const { canAccessCommunity, isPro, remainingQueries } = useSubscription();
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -46,16 +55,46 @@ export function Header() {
           </Link>
           
           <div className="flex items-center gap-1.5 sm:gap-3">
+            {user && !isPro && (
+              <span className="text-xs text-muted-foreground hidden md:block">
+                {remainingQueries} queries left
+              </span>
+            )}
+            {isPro && (
+              <Badge variant="secondary" className="gap-1 hidden sm:flex">
+                <Crown className="h-3 w-3 text-yellow-500" />
+                Pro
+              </Badge>
+            )}
             <span className="text-xs text-muted-foreground hidden lg:block">
               7 AI Models • Real-time Comparison
             </span>
             <HelpButton onClick={startTour} />
-            <Link to="/chat/community" data-tour="community">
-              <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3">
-                <Users className="h-4 w-4 text-primary" />
-                <span className="hidden sm:inline">Community</span>
-              </Button>
-            </Link>
+            {canAccessCommunity ? (
+              <Link to="/chat/community" data-tour="community">
+                <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="hidden sm:inline">Community</span>
+                </Button>
+              </Link>
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" disabled className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3 opacity-50">
+                      <Lock className="h-4 w-4" />
+                      <span className="hidden sm:inline">Community</span>
+                      <Badge variant="outline" className="text-[10px] px-1 py-0 ml-1 hidden sm:inline-flex">
+                        Pro
+                      </Badge>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Upgrade to Pro for Community access</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             
             {!loading && (
               user ? (

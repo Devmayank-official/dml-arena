@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share2, Check, Link, Copy } from 'lucide-react';
+import { Share2, Check, Link, Copy, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,6 +11,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ShareButtonProps {
   onShare: () => Promise<string | null>;
@@ -23,6 +31,7 @@ export function ShareButton({ onShare, disabled }: ShareButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { canShare } = useSubscription();
 
   const handleShare = async () => {
     setIsLoading(true);
@@ -60,6 +69,27 @@ export function ShareButton({ onShare, disabled }: ShareButtonProps) {
       setCopied(false);
     }
   };
+
+  if (!canShare) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="sm" disabled className="gap-2 opacity-50">
+              <Lock className="h-4 w-4" />
+              Share
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">
+                Pro
+              </Badge>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Upgrade to Pro to share results</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
