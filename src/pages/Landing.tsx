@@ -103,7 +103,7 @@ const Landing = () => {
                 Start Comparing Free
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <a href="#pricing">View Pricing</a>
+                <Link to="/pricing">View Pricing</Link>
               </Button>
             </div>
           </motion.div>
