@@ -7,6 +7,7 @@ import { DeepModeToggle, DeepModeSettings } from '@/components/DeepModeToggle';
 import { DebateProgress } from '@/components/DebateProgress';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
+import { UsageAlert } from '@/components/UsageAlert';
 import { AI_MODELS } from '@/lib/models';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
 import { useHistory } from '@/hooks/useHistory';
@@ -239,6 +240,9 @@ export default function Index() {
       <Header />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+        {/* Usage Alert for Free Users */}
+        <UsageAlert />
+        
         {/* Model Selector */}
         <section className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6" data-tour="model-selector">
           <ModelSelector

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn, Lock, Crown } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown, History, Trophy, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
@@ -69,6 +69,23 @@ export function Header() {
             <span className="text-xs text-muted-foreground hidden lg:block">
               7 AI Models • Real-time Comparison
             </span>
+            
+            {/* History Link */}
+            <Link to="/chat/history">
+              <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">History</span>
+              </Button>
+            </Link>
+            
+            {/* Leaderboard Link */}
+            <Link to="/chat/leaderboard">
+              <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">Leaderboard</span>
+              </Button>
+            </Link>
+
             <HelpButton onClick={startTour} />
             {canAccessCommunity ? (
               <Link to="/chat/community" data-tour="community">
