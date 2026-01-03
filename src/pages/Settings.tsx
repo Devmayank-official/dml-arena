@@ -10,7 +10,12 @@ import {
   Trash2,
   AlertTriangle,
   Check,
-  Loader2
+  Loader2,
+  CreditCard,
+  Crown,
+  Zap,
+  Calendar,
+  ArrowUpRight
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,6 +29,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { AI_MODELS } from '@/lib/models';
 import {
   Select,
@@ -48,6 +56,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { settings, updateSettings } = useSettings();
+  const { subscription, isPro, remainingQueries, isLoading: subscriptionLoading } = useSubscription();
   
   const [isExporting, setIsExporting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -199,6 +208,143 @@ export default function Settings() {
                   View Profile
                 </Button>
               </div>
+            </Card>
+          )}
+
+          {/* Subscription Management */}
+          {user && (
+            <Card className="p-4 sm:p-6 bg-card border-border">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <CreditCard className="h-5 w-5 text-primary" />
+                <h2 className="text-base sm:text-lg font-semibold">Subscription</h2>
+                {isPro && (
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0">
+                    <Crown className="h-3 w-3 mr-1" />
+                    Pro
+                  </Badge>
+                )}
+              </div>
+
+              {subscriptionLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : isPro ? (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Crown className="h-5 w-5 text-yellow-500" />
+                      <span className="font-semibold">Pro Plan</span>
+                      <span className="text-muted-foreground">$15/month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Unlimited queries, all 7 AI models, Deep Mode, Community access, and more.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="gap-1">
+                        <Zap className="h-3 w-3" />
+                        Unlimited Queries
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <Layers className="h-3 w-3" />
+                        All Models
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <Check className="h-3 w-3" />
+                        Deep Mode
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {subscription?.usage_reset_at && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Next billing cycle: {new Date(subscription.usage_reset_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Need to cancel or manage billing?
+                    </p>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      Manage Subscription
+                      <ArrowUpRight className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold">Free Plan</span>
+                      <span className="text-muted-foreground">$0/month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Limited access to AI comparison features.
+                    </p>
+                    
+                    {/* Usage Progress */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Monthly Queries</span>
+                        <span className="font-medium">
+                          {subscription?.monthly_usage || 0} / {FREE_PLAN_LIMITS.monthlyQueries}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={((subscription?.monthly_usage || 0) / FREE_PLAN_LIMITS.monthlyQueries) * 100} 
+                        className="h-2"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {remainingQueries} queries remaining this month
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="gap-1">
+                        Gemini 2.5 Flash Lite
+                      </Badge>
+                      <Badge variant="outline" className="gap-1">
+                        GPT-5 Nano
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {subscription?.usage_reset_at && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Usage resets: {new Date(subscription.usage_reset_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center shrink-0">
+                        <Crown className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold mb-1">Upgrade to Pro</h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Get unlimited queries, all 7 AI models, Deep Mode debates, community access, sharing & export.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/pricing')}
+                          className="gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600"
+                        >
+                          <Crown className="h-4 w-4" />
+                          Upgrade for $15/month
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card>
           )}
 
