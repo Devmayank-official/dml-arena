@@ -1,71 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { User } from '@supabase/supabase-js';
-
-interface TokenUsage {
-  prompt: number;
-  completion: number;
-  total: number;
-}
-
-interface ModelResponse {
-  model: string;
-  response: string;
-  error?: string;
-  duration: number;
-  tokens?: TokenUsage;
-}
-
-interface ComparisonHistory {
-  id: string;
-  query: string;
-  responses: ModelResponse[];
-  created_at: string;
-}
-
-interface DebateHistory {
-  id: string;
-  query: string;
-  models: string[];
-  settings: any;
-  round_responses: any[];
-  final_answer: string | null;
-  total_rounds: number;
-  elapsed_time: number;
-  created_at: string;
-}
-
-interface Vote {
-  id: string;
-  history_id: string;
-  history_type: 'comparison' | 'debate';
-  model_id: string;
-  vote_type: 'up' | 'down';
-}
+import { useAuth } from '@/hooks/useAuth';
+import type { ModelResponse, ComparisonHistory, DebateHistory, Vote } from '@/types';
 
 export function useHistory(enabled: boolean) {
+  const { user } = useAuth();
   const [comparisonHistory, setComparisonHistory] = useState<ComparisonHistory[]>([]);
   const [debateHistory, setDebateHistory] = useState<DebateHistory[]>([]);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
-
-  // Listen for auth state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const fetchHistory = useCallback(async () => {
     if (!enabled || !user) {

@@ -8,37 +8,17 @@ import { DebateProgress } from '@/components/DebateProgress';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { UsageAlert } from '@/components/UsageAlert';
+import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { AI_MODELS } from '@/lib/models';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
 import { useHistory } from '@/hooks/useHistory';
 import { useStreamingComparison } from '@/hooks/useStreamingComparison';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/hooks/use-toast';
-import { History, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
-interface TokenUsage {
-  prompt: number;
-  completion: number;
-  total: number;
-}
-
-interface ModelResponse {
-  model: string;
-  response: string;
-  error?: string;
-  duration: number;
-  tokens?: TokenUsage;
-  isStreaming?: boolean;
-}
-
-interface QueryHistory {
-  id: string | null;
-  query: string;
-  responses: ModelResponse[];
-  timestamp: Date;
-}
+import type { ModelResponse } from '@/types';
 
 const DEBATE_MODELS = [
   'openai/gpt-5',
@@ -227,13 +207,6 @@ export default function Index() {
   const streamingResponses = streaming.getResponsesArray();
   const hasStreamingContent = streamingResponses.length > 0;
 
-  // Use persistent history
-  const displayHistory = history.comparisonHistory.map(h => ({
-    id: h.id,
-    query: h.query,
-    responses: h.responses as ModelResponse[],
-    timestamp: new Date(h.created_at),
-  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -372,59 +345,9 @@ export default function Index() {
           </section>
         )}
 
-        {/* Response History (Regular Mode) */}
-        {!deepMode && displayHistory.length > 0 && !hasStreamingContent && (
-          <section className="space-y-6">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Responses</h2>
-              <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
-                <History className="h-3 w-3" />
-                Saved
-              </span>
-            </div>
-
-            {displayHistory.map((entry, index) => (
-              <div key={entry.id || index} className="space-y-4">
-                <div className="bg-secondary/30 rounded-lg p-4 border-l-4 border-primary">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Your Query:</p>
-                      <p className="text-muted-foreground mt-1">{entry.query}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {entry.timestamp.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {entry.id && (
-                        <ExportDropdown
-                          query={entry.query}
-                          responses={entry.responses}
-                          createdAt={entry.timestamp.toISOString()}
-                        />
-                      )}
-                      {entry.id && (
-                        <ShareButton
-                          onShare={() => history.shareResult(entry.id!, 'comparison')}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <ResponseGrid 
-                  responses={entry.responses} 
-                  loadingModels={[]}
-                  historyId={entry.id}
-                  showVoting={!!entry.id}
-                  onVote={(modelId, type) => entry.id && handleVote(entry.id, modelId, type)}
-                  getVote={(modelId) => entry.id ? history.getVote(entry.id, modelId) : null}
-                />
-              </div>
-            ))}
-          </section>
-        )}
 
         {/* Empty State */}
-        {!deepMode && displayHistory.length === 0 && !hasStreamingContent && !deepDebate.isDebating && !deepDebate.finalAnswer && (
+        {!deepMode && !hasStreamingContent && !deepDebate.isDebating && !deepDebate.finalAnswer && (
           <section className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
               <span className="text-3xl">🤖</span>
@@ -460,11 +383,7 @@ export default function Index() {
         )}
       </main>
 
-      {/* Background Effects */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
+      <BackgroundEffects />
     </div>
   );
 }
