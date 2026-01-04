@@ -9,9 +9,9 @@ import {
   Filter,
   TrendingUp,
   Zap,
-  MessageSquare,
   ThumbsUp
 } from 'lucide-react';
+import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,12 +63,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
-
+      <BackgroundEffects />
       <Header />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8 relative z-10">
