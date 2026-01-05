@@ -32,9 +32,9 @@ export function useKeyboardShortcuts() {
     {
       key: 'l',
       modifiers: ['ctrl'],
-      description: 'Go to Leaderboard',
+      description: 'Go to Community',
       category: 'navigation',
-      action: () => navigate('/chat/leaderboard'),
+      action: () => navigate('/chat/community'),
     },
     {
       key: 's',
