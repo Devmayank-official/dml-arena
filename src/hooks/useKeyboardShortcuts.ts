@@ -30,7 +30,7 @@ export function useKeyboardShortcuts() {
       action: () => navigate('/chat/history'),
     },
     {
-      key: 'l',
+      key: 'c',
       modifiers: ['ctrl'],
       description: 'Go to Community',
       category: 'navigation',
@@ -42,13 +42,6 @@ export function useKeyboardShortcuts() {
       description: 'Go to Settings',
       category: 'navigation',
       action: () => navigate('/chat/settings'),
-    },
-    {
-      key: 'c',
-      modifiers: ['ctrl'],
-      description: 'Go to Community',
-      category: 'navigation',
-      action: () => navigate('/chat/community'),
     },
     // Actions
     {
