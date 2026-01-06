@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TourProvider } from "@/contexts/TourContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import Landing from "./pages/Landing";
@@ -61,14 +62,16 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <TourProvider>
-        <Toaster />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </TourProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <TourProvider>
+          <Toaster />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TourProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

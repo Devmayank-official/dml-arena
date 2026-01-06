@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn, Lock, Crown, History, Keyboard } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTourContext } from '@/contexts/TourContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +79,7 @@ export function Header() {
               </Button>
             </Link>
             
+            <ThemeToggle />
             <HelpButton onClick={startTour} />
             {canAccessCommunity ? (
               <Link to="/chat/community" data-tour="community">
