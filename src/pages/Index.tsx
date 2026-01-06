@@ -9,6 +9,8 @@ import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { UsageAlert } from '@/components/UsageAlert';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
+import { StreamingIndicator } from '@/components/StreamingIndicator';
+import { QuickReRun } from '@/components/QuickReRun';
 import { AI_MODELS } from '@/lib/models';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
 import { useHistory } from '@/hooks/useHistory';
@@ -19,6 +21,7 @@ import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import type { ModelResponse } from '@/types';
+import { AnimatePresence } from 'framer-motion';
 
 const DEBATE_MODELS = [
   'openai/gpt-5',
@@ -287,6 +290,18 @@ export default function Index() {
           </section>
         )}
 
+        {/* Real-Time Streaming Indicator */}
+        <AnimatePresence>
+          {streaming.isLoading && streaming.streamingModels.length > 0 && (
+            <section className="max-w-3xl mx-auto">
+              <StreamingIndicator
+                streamingModels={streaming.streamingModels}
+                totalModels={selectedModels.length}
+              />
+            </section>
+          )}
+        </AnimatePresence>
+
         {/* Current Streaming Responses */}
         {!deepMode && hasStreamingContent && (
           <section className="space-y-4">
@@ -295,13 +310,23 @@ export default function Index() {
                 <h2 className="text-lg font-semibold">
                   {streaming.isLoading ? 'Streaming Responses...' : 'Current Responses'}
                 </h2>
-                {streaming.isLoading && (
-                  <span className="text-xs text-primary animate-pulse">
-                    {streaming.streamingModels.length} models streaming
-                  </span>
-                )}
               </div>
               <div className="flex items-center gap-2">
+                {/* Quick Re-Run Button */}
+                {currentQuery && !streaming.isLoading && (
+                  <QuickReRun
+                    lastQuery={currentQuery}
+                    lastModels={selectedModels}
+                    onReRun={(query, models) => {
+                      setCurrentComparisonId(null);
+                      setCurrentQuery(query);
+                      streaming.reset();
+                      streaming.startComparison(query, models);
+                    }}
+                    disabled={streaming.isLoading}
+                  />
+                )}
+                
                 {currentComparisonId && !streaming.isLoading && (
                   <ExportDropdown
                     query={currentQuery}
