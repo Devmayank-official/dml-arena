@@ -25,6 +25,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { ResponseGrid } from '@/components/ResponseGrid';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
+import { BulkExport } from '@/components/BulkExport';
 import { getModelById } from '@/lib/models';
 import {
   Select,
@@ -171,31 +172,37 @@ export default function History() {
             </div>
             
             {combinedHistory.length > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                    Clear All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Clear all history?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all your comparison and debate history. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => history.clearHistory()}
-                      className="bg-destructive hover:bg-destructive/90"
-                    >
-                      Delete All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <div className="flex items-center gap-2">
+                <BulkExport 
+                  comparisons={history.comparisonHistory}
+                  debates={history.debateHistory}
+                />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                      Clear All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear all history?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all your comparison and debate history. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => history.clearHistory()}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        Delete All
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </div>
 
