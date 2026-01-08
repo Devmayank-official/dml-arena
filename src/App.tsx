@@ -18,7 +18,10 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { OfflineIndicator } from "./components/OfflineIndicator";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -49,6 +52,9 @@ function AppContent() {
         <Route path="/chat/leaderboard" element={<Navigate to="/chat/community" replace />} />
         <Route path="/chat/share/:code" element={<ProtectedRoute><SharedResult /></ProtectedRoute>} />
         
+        {/* Install page - public */}
+        <Route path="/install" element={<Install />} />
+        
         {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -68,6 +74,8 @@ const App = () => (
       <TooltipProvider>
         <TourProvider>
           <Toaster />
+          <OfflineIndicator />
+          <PWAInstallPrompt />
           <BrowserRouter>
             <AppContent />
           </BrowserRouter>
