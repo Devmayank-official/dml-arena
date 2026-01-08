@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn, Lock, Crown, History } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
@@ -70,6 +70,14 @@ export function Header() {
             <span className="text-xs text-muted-foreground hidden lg:block">
               7 AI Models • Real-time Comparison
             </span>
+            
+            {/* Dashboard Link */}
+            <Link to="/chat/dashboard">
+              <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Button>
+            </Link>
             
             {/* History Link */}
             <Link to="/chat/history">

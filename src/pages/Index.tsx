@@ -11,11 +11,14 @@ import { UsageAlert } from '@/components/UsageAlert';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { StreamingIndicator } from '@/components/StreamingIndicator';
 import { QuickReRun } from '@/components/QuickReRun';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { AI_MODELS } from '@/lib/models';
+import { classifyQuery, type QueryCategory } from '@/lib/queryCategories';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
 import { useHistory } from '@/hooks/useHistory';
 import { useStreamingComparison } from '@/hooks/useStreamingComparison';
 import { useSettings } from '@/hooks/useSettings';
+import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,7 +50,10 @@ export default function Index() {
   const [currentDebateId, setCurrentDebateId] = useState<string | null>(null);
   const [currentComparisonId, setCurrentComparisonId] = useState<string | null>(null);
   const [currentQuery, setCurrentQuery] = useState<string>('');
+  const [currentCategory, setCurrentCategory] = useState<QueryCategory | null>(null);
   const { toast } = useToast();
+
+  const { trackPerformance } = useModelPerformance();
 
   const deepDebate = useDeepDebate();
   const history = useHistory(settings.autoSaveHistory);
@@ -79,7 +85,7 @@ export default function Index() {
     }
   }, [deepDebate.finalAnswer]);
 
-  // Save comparison when streaming completes
+  // Save comparison when streaming completes and track performance
   useEffect(() => {
     const responses = streaming.getResponsesArray();
     const allComplete = responses.length > 0 && 
@@ -94,6 +100,17 @@ export default function Index() {
         duration: r.duration,
         tokens: r.tokens,
       }));
+      
+      // Track performance for each model
+      for (const r of responses) {
+        trackPerformance(
+          r.model,
+          r.duration,
+          r.tokens?.total || null,
+          currentCategory,
+          !r.error
+        );
+      }
       
       history.saveComparison(currentQuery, formattedResponses).then(id => {
         if (id) {
@@ -169,6 +186,11 @@ export default function Index() {
     // Reset for new comparison
     setCurrentComparisonId(null);
     setCurrentQuery(message);
+    
+    // Auto-categorize the query
+    const category = classifyQuery(message);
+    setCurrentCategory(category);
+    
     streaming.reset();
     
     // Start streaming comparison
@@ -352,7 +374,12 @@ export default function Index() {
             </div>
             {currentQuery && (
               <div className="bg-secondary/30 rounded-lg p-4 border-l-4 border-primary">
-                <p className="text-sm font-medium">Your Query:</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Your Query:</p>
+                  {currentCategory && (
+                    <CategoryBadge category={currentCategory} />
+                  )}
+                </div>
                 <p className="text-muted-foreground mt-1">{currentQuery}</p>
               </div>
             )}

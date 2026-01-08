@@ -48,6 +48,7 @@ export type Database = {
       }
       comparison_history: {
         Row: {
+          category: string | null
           created_at: string
           id: string
           is_public: boolean
@@ -56,6 +57,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           id?: string
           is_public?: boolean
@@ -64,6 +66,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           id?: string
           is_public?: boolean
@@ -111,6 +114,39 @@ export type Database = {
           round_responses?: Json
           settings?: Json
           total_rounds?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      model_performance: {
+        Row: {
+          created_at: string
+          id: string
+          model_id: string
+          query_category: string | null
+          response_time_ms: number
+          success: boolean
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_id: string
+          query_category?: string | null
+          response_time_ms: number
+          success?: boolean
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_id?: string
+          query_category?: string | null
+          response_time_ms?: number
+          success?: boolean
+          tokens_used?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -225,6 +261,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          comparison_id: string | null
+          created_at: string
+          debate_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comparison_id?: string | null
+          created_at?: string
+          debate_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comparison_id?: string | null
+          created_at?: string
+          debate_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_comparison_id_fkey"
+            columns: ["comparison_id"]
+            isOneToOne: false
+            referencedRelation: "comparison_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_favorites_debate_id_fkey"
+            columns: ["debate_id"]
+            isOneToOne: false
+            referencedRelation: "debate_history"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
