@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
+import Insights from "./pages/Insights";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -49,6 +50,7 @@ function AppContent() {
         <Route path="/chat/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/chat/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/chat/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/chat/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
         <Route path="/chat/leaderboard" element={<Navigate to="/chat/community" replace />} />
         <Route path="/chat/share/:code" element={<ProtectedRoute><SharedResult /></ProtectedRoute>} />
         
