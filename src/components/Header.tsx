@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationCenter } from '@/components/NotificationCenter';
 import { useTourContext } from '@/contexts/TourContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +80,14 @@ export function Header() {
               </Button>
             </Link>
             
+            {/* Insights Link */}
+            <Link to="/chat/insights">
+              <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden lg:inline">Insights</span>
+              </Button>
+            </Link>
+            
             {/* History Link */}
             <Link to="/chat/history">
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
@@ -86,6 +95,9 @@ export function Header() {
                 <span className="hidden sm:inline">History</span>
               </Button>
             </Link>
+            
+            {/* Notifications */}
+            <NotificationCenter />
             
             <ThemeToggle />
             <HelpButton onClick={startTour} />

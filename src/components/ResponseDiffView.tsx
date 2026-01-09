@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeftRight, X, ChevronDown } from 'lucide-react';
+import { ArrowLeftRight, X, Eye, EyeOff, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { getModelById } from '@/lib/models';
 import { cn } from '@/lib/utils';
+import { computeWordDiff, getSimilarityPercentage, type DiffSegment } from '@/lib/diffUtils';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -25,16 +27,47 @@ interface ResponseDiffViewProps {
   onClose: () => void;
 }
 
+function DiffHighlightedText({ segments }: { segments: DiffSegment[] }) {
+  return (
+    <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+      {segments.map((segment, index) => (
+        <span
+          key={index}
+          className={cn(
+            segment.type === 'delete' && 'bg-red-500/20 text-red-700 dark:text-red-300 line-through',
+            segment.type === 'insert' && 'bg-green-500/20 text-green-700 dark:text-green-300'
+          )}
+        >
+          {segment.value}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) {
   const validResponses = responses.filter(r => !r.error && r.response);
   const [leftModel, setLeftModel] = useState<string>(validResponses[0]?.model || '');
   const [rightModel, setRightModel] = useState<string>(validResponses[1]?.model || '');
+  const [showDiffHighlight, setShowDiffHighlight] = useState(true);
 
   const leftResponse = validResponses.find(r => r.model === leftModel);
   const rightResponse = validResponses.find(r => r.model === rightModel);
 
   const leftModelInfo = getModelById(leftModel);
   const rightModelInfo = getModelById(rightModel);
+
+  // Compute word-level diff
+  const { leftDiff, rightDiff, similarity } = useMemo(() => {
+    if (!leftResponse?.response || !rightResponse?.response) {
+      return { leftDiff: [], rightDiff: [], similarity: 0 };
+    }
+
+    const { left, right } = computeWordDiff(leftResponse.response, rightResponse.response);
+    const sim = getSimilarityPercentage(leftResponse.response, rightResponse.response);
+    
+    return { leftDiff: left, rightDiff: right, similarity: sim };
+  }, [leftResponse?.response, rightResponse?.response]);
 
   if (validResponses.length < 2) {
     return (
@@ -56,14 +89,46 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/30">
-        <div className="flex items-center gap-2">
-          <ArrowLeftRight className="h-4 w-4 text-primary" />
-          <span className="font-medium text-sm">Compare Responses</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ArrowLeftRight className="h-4 w-4 text-primary" />
+            <span className="font-medium text-sm">Compare Responses</span>
+          </div>
+          <Badge variant="outline" className="gap-1">
+            <Percent className="h-3 w-3" />
+            {similarity}% similar
+          </Badge>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={showDiffHighlight ? "secondary" : "ghost"}
+            size="sm"
+            className="gap-1.5 h-7 text-xs"
+            onClick={() => setShowDiffHighlight(!showDiffHighlight)}
+          >
+            {showDiffHighlight ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            Diff
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* Diff Legend when highlighting is enabled */}
+      {showDiffHighlight && (
+        <div className="flex items-center gap-4 px-4 py-2 bg-muted/30 border-b border-border text-xs">
+          <span className="text-muted-foreground">Legend:</span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-red-500/20 border border-red-500/30" />
+            Removed
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-green-500/20 border border-green-500/30" />
+            Added
+          </span>
+        </div>
+      )}
 
       {/* Model Selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border-b border-border">
@@ -133,7 +198,11 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
           </div>
           <div className="p-4 max-h-[400px] overflow-y-auto">
             {leftResponse ? (
-              <MarkdownContent content={leftResponse.response} className="text-sm" />
+              showDiffHighlight && leftDiff.length > 0 ? (
+                <DiffHighlightedText segments={leftDiff} />
+              ) : (
+                <MarkdownContent content={leftResponse.response} className="text-sm" />
+              )
             ) : (
               <p className="text-muted-foreground text-sm">Select a model</p>
             )}
@@ -154,7 +223,11 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
           </div>
           <div className="p-4 max-h-[400px] overflow-y-auto">
             {rightResponse ? (
-              <MarkdownContent content={rightResponse.response} className="text-sm" />
+              showDiffHighlight && rightDiff.length > 0 ? (
+                <DiffHighlightedText segments={rightDiff} />
+              ) : (
+                <MarkdownContent content={rightResponse.response} className="text-sm" />
+              )
             ) : (
               <p className="text-muted-foreground text-sm">Select a model</p>
             )}
