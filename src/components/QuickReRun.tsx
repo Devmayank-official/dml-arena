@@ -50,6 +50,7 @@ export function QuickReRun({ lastQuery, lastModels, onReRun, disabled }: QuickRe
           size="sm"
           className="gap-2"
           disabled={disabled}
+          data-action="quick-rerun"
         >
           <RefreshCw className="h-4 w-4" />
           <span className="hidden sm:inline">Re-run</span>

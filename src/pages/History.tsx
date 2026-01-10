@@ -12,7 +12,8 @@ import {
   Brain,
   Clock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Star
 } from 'lucide-react';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { Button } from '@/components/ui/button';
@@ -22,10 +23,12 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { useHistory } from '@/hooks/useHistory';
 import { useSettings } from '@/hooks/useSettings';
+import { useFavorites } from '@/hooks/useFavorites';
 import { ResponseGrid } from '@/components/ResponseGrid';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { BulkExport } from '@/components/BulkExport';
+import { FavoriteButton } from '@/components/FavoriteButton';
 import { getModelById } from '@/lib/models';
 import {
   Select,
@@ -51,12 +54,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-type FilterType = 'all' | 'comparison' | 'debate';
+type FilterType = 'all' | 'comparison' | 'debate' | 'favorites';
 type SortType = 'newest' | 'oldest';
 
 export default function History() {
   const { settings } = useSettings();
   const history = useHistory(settings.autoSaveHistory);
+  const { isFavorite, toggleFavorite, favorites } = useFavorites();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -88,7 +92,9 @@ export default function History() {
     let combined = [...comparisons, ...debates];
 
     // Filter by type
-    if (filterType !== 'all') {
+    if (filterType === 'favorites') {
+      combined = combined.filter(h => isFavorite(h.type, h.id));
+    } else if (filterType !== 'all') {
       combined = combined.filter(h => h.type === filterType);
     }
 
@@ -109,7 +115,7 @@ export default function History() {
     });
 
     return combined;
-  }, [history.comparisonHistory, history.debateHistory, filterType, searchQuery, sortOrder]);
+  }, [history.comparisonHistory, history.debateHistory, filterType, searchQuery, sortOrder, favorites, isFavorite]);
 
   const toggleExpanded = (id: string) => {
     setExpandedItems(prev => {
@@ -230,6 +236,12 @@ export default function History() {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="comparison">Comparisons</SelectItem>
                   <SelectItem value="debate">Debates</SelectItem>
+                  <SelectItem value="favorites">
+                    <span className="flex items-center gap-1.5">
+                      <Star className="h-3.5 w-3.5 text-yellow-500" />
+                      Favorites
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
@@ -357,7 +369,12 @@ export default function History() {
                         <CollapsibleContent>
                           <div className="border-t border-border p-4 bg-muted/30">
                             {/* Actions */}
-                            <div className="flex items-center gap-2 mb-4">
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                              <FavoriteButton
+                                isFavorite={isFavorite(item.type, item.id)}
+                                onToggle={() => toggleFavorite(item.type, item.id)}
+                                size="sm"
+                              />
                               <ShareButton
                                 onShare={() => history.shareResult(item.id, item.type)}
                               />

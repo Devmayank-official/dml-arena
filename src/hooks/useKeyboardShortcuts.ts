@@ -43,6 +43,13 @@ export function useKeyboardShortcuts() {
       category: 'navigation',
       action: () => navigate('/chat/settings'),
     },
+    {
+      key: 'i',
+      modifiers: ['ctrl'],
+      description: 'Go to Insights',
+      category: 'navigation',
+      action: () => navigate('/chat/insights'),
+    },
     // Actions
     {
       key: '/',
@@ -70,6 +77,46 @@ export function useKeyboardShortcuts() {
       category: 'actions',
       action: () => setIsHelpOpen(true),
     },
+    {
+      key: 'r',
+      modifiers: ['ctrl'],
+      description: 'Re-run last comparison',
+      category: 'actions',
+      action: () => {
+        const reRunBtn = document.querySelector('[data-action="quick-rerun"]') as HTMLElement;
+        reRunBtn?.click();
+      },
+    },
+    {
+      key: 'b',
+      modifiers: ['ctrl'],
+      description: 'Toggle favorite/bookmark',
+      category: 'actions',
+      action: () => {
+        const favoriteBtn = document.querySelector('[data-action="toggle-favorite"]') as HTMLElement;
+        favoriteBtn?.click();
+      },
+    },
+    {
+      key: 'e',
+      modifiers: ['ctrl'],
+      description: 'Export current comparison',
+      category: 'actions',
+      action: () => {
+        const exportBtn = document.querySelector('[data-action="export"]') as HTMLElement;
+        exportBtn?.click();
+      },
+    },
+    {
+      key: 'n',
+      modifiers: ['ctrl'],
+      description: 'Open notifications',
+      category: 'actions',
+      action: () => {
+        const notifBtn = document.querySelector('[data-action="notifications"]') as HTMLElement;
+        notifBtn?.click();
+      },
+    },
     // Comparison shortcuts
     {
       key: '1',
@@ -91,6 +138,20 @@ export function useKeyboardShortcuts() {
       description: 'Toggle third model',
       category: 'comparison',
       action: () => clickModelByIndex(2),
+    },
+    {
+      key: '4',
+      modifiers: ['alt'],
+      description: 'Toggle fourth model',
+      category: 'comparison',
+      action: () => clickModelByIndex(3),
+    },
+    {
+      key: '5',
+      modifiers: ['alt'],
+      description: 'Toggle fifth model',
+      category: 'comparison',
+      action: () => clickModelByIndex(4),
     },
     {
       key: 'a',

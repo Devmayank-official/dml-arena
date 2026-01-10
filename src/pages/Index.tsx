@@ -12,6 +12,7 @@ import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { StreamingIndicator } from '@/components/StreamingIndicator';
 import { QuickReRun } from '@/components/QuickReRun';
 import { CategoryBadge } from '@/components/CategoryBadge';
+import { FavoriteButton } from '@/components/FavoriteButton';
 import { AI_MODELS } from '@/lib/models';
 import { classifyQuery, type QueryCategory } from '@/lib/queryCategories';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
@@ -19,6 +20,8 @@ import { useHistory } from '@/hooks/useHistory';
 import { useStreamingComparison } from '@/hooks/useStreamingComparison';
 import { useSettings } from '@/hooks/useSettings';
 import { useModelPerformance } from '@/hooks/useModelPerformance';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,6 +57,8 @@ export default function Index() {
   const { toast } = useToast();
 
   const { trackPerformance } = useModelPerformance();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { notifyComparisonComplete, notifyDebateComplete } = useNotifications();
 
   const deepDebate = useDeepDebate();
   const history = useHistory(settings.autoSaveHistory);
@@ -80,7 +85,11 @@ export default function Index() {
         deepDebate.totalRounds,
         deepDebate.elapsedTime
       ).then(id => {
-        if (id) setCurrentDebateId(id);
+        if (id) {
+          setCurrentDebateId(id);
+          // Trigger notification
+          notifyDebateComplete(deepDebate.totalRounds);
+        }
       });
     }
   }, [deepDebate.finalAnswer]);
@@ -115,10 +124,8 @@ export default function Index() {
       history.saveComparison(currentQuery, formattedResponses).then(id => {
         if (id) {
           setCurrentComparisonId(id);
-          toast({
-            title: 'Responses received',
-            description: `Got ${responses.length} responses from AI models.`,
-          });
+          // Trigger notification
+          notifyComparisonComplete(responses.length, currentQuery);
         }
       });
     }
@@ -350,10 +357,17 @@ export default function Index() {
                 )}
                 
                 {currentComparisonId && !streaming.isLoading && (
-                  <ExportDropdown
-                    query={currentQuery}
-                    responses={streamingResponses}
-                  />
+                  <>
+                    <FavoriteButton
+                      isFavorite={isFavorite('comparison', currentComparisonId)}
+                      onToggle={() => toggleFavorite('comparison', currentComparisonId)}
+                      size="sm"
+                    />
+                    <ExportDropdown
+                      query={currentQuery}
+                      responses={streamingResponses}
+                    />
+                  </>
                 )}
                 {currentComparisonId && (
                   <ShareButton
