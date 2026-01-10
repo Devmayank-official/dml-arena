@@ -34,6 +34,7 @@ export function FavoriteButton({
             )}
             onClick={onToggle}
             disabled={disabled}
+            data-action="toggle-favorite"
           >
             <Star
               className={cn(
@@ -45,7 +46,7 @@ export function FavoriteButton({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isFavorite ? 'Remove from favorites' : 'Add to favorites'}</p>
+          <p>{isFavorite ? 'Remove from favorites (Ctrl+B)' : 'Add to favorites (Ctrl+B)'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
