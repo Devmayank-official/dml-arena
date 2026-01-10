@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -11,7 +11,6 @@ import {
   Edit2,
   Check,
   X,
-  Camera,
   LogOut,
   KeyRound,
   Loader2
@@ -59,7 +58,6 @@ export default function Profile() {
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleStartEdit = () => {
     setEditName(profile?.display_name || '');
@@ -79,31 +77,6 @@ export default function Profile() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-  };
-
-  const handleAvatarClick = () => {
-    if (isOwner && fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Error', description: 'Image must be less than 5MB', variant: 'destructive' });
-      return;
-    }
-
-    // Validate file type
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
-      toast({ title: 'Error', description: 'Only JPEG, PNG, WebP, and GIF images are allowed', variant: 'destructive' });
-      return;
-    }
-
-    await uploadAvatar(file);
   };
 
   const handleLogout = async () => {
@@ -191,20 +164,12 @@ export default function Profile() {
           >
             <Card className="p-4 sm:p-6 bg-card border-border">
               <div className="text-center">
-                {/* Avatar with upload */}
+                {/* Avatar display (no upload) */}
                 <div className="relative inline-block mb-3 sm:mb-4">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="hidden"
-                    onChange={handleAvatarChange}
-                  />
                   <div 
                     className={`w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mx-auto ${
-                      isOwner ? 'cursor-pointer group' : ''
-                    } ${profile.avatar_url ? '' : 'bg-gradient-to-br from-primary to-accent'}`}
-                    onClick={handleAvatarClick}
+                      profile.avatar_url ? '' : 'bg-gradient-to-br from-primary to-accent'
+                    }`}
                   >
                     {profile.avatar_url ? (
                       <img 
@@ -216,15 +181,6 @@ export default function Profile() {
                       <span className="text-3xl font-bold text-primary-foreground">
                         {(profile.display_name || 'U')[0].toUpperCase()}
                       </span>
-                    )}
-                    {isOwner && (
-                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isUploading ? (
-                          <Loader2 className="h-6 w-6 text-white animate-spin" />
-                        ) : (
-                          <Camera className="h-6 w-6 text-white" />
-                        )}
-                      </div>
                     )}
                   </div>
                 </div>
