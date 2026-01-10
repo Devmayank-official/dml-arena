@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import {
   Menu,
   X,
@@ -36,8 +36,16 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { canAccessCommunity, isPro } = useSubscription();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => location.pathname === href;
+
+  // Handle swipe gesture to close menu
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x < -50 || info.velocity.x < -500) {
+      setIsOpen(false);
+    }
+  };
 
   return (
     <>
@@ -65,15 +73,20 @@ export function MobileNav() {
         )}
       </AnimatePresence>
 
-      {/* Slide-out Menu */}
+      {/* Slide-out Menu with Swipe Gesture */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={menuRef}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 md:hidden"
+            drag="x"
+            dragConstraints={{ left: -300, right: 0 }}
+            dragElastic={0.1}
+            onDragEnd={handleDragEnd}
+            className="fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 md:hidden shadow-xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
