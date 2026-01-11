@@ -22,12 +22,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Desktop sidebar on right side - hidden on mobile */}
           {!isMobile && <AppSidebar />}
         </div>
-        {/* Floating sidebar trigger for desktop - visible when collapsed */}
-        {!isMobile && (
-          <div className="fixed bottom-4 right-4 z-40 hidden md:block">
-            <SidebarTrigger className="h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90" />
-          </div>
-        )}
       </div>
     </SidebarProvider>
   );
