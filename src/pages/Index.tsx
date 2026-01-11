@@ -269,6 +269,7 @@ export default function Index() {
             onToggleModel={handleToggleModel}
             onSelectAll={handleSelectAll}
             onDeselectAll={handleDeselectAll}
+            onSetModels={setSelectedModels}
           />
         </section>
 

@@ -16,19 +16,22 @@ import {
 } from '@/components/ui/tooltip';
 import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
+import { ModelPresetSelector } from '@/components/ModelPresetSelector';
 
 interface ModelSelectorProps {
   selectedModels: string[];
   onToggleModel: (modelId: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
+  onSetModels?: (models: string[]) => void;
 }
 
 export function ModelSelector({ 
   selectedModels, 
   onToggleModel, 
   onSelectAll, 
-  onDeselectAll 
+  onDeselectAll,
+  onSetModels,
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { canUseModel, isPro } = useSubscription();
@@ -64,9 +67,17 @@ export function ModelSelector({
             </Badge>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">
-          {selectedModels.length} of {isPro ? AI_MODELS.length : FREE_PLAN_LIMITS.allowedModels.length} selected
-        </span>
+        <div className="flex items-center gap-2">
+          {onSetModels && (
+            <ModelPresetSelector
+              selectedModels={selectedModels}
+              onApplyPreset={onSetModels}
+            />
+          )}
+          <span className="text-xs text-muted-foreground">
+            {selectedModels.length} of {isPro ? AI_MODELS.length : FREE_PLAN_LIMITS.allowedModels.length}
+          </span>
+        </div>
       </div>
 
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
