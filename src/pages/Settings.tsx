@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
 import { useToast } from '@/hooks/use-toast';
@@ -154,14 +154,12 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
       </div>
-
-      <Header />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8 relative z-10 max-w-3xl">
         <motion.div
@@ -557,6 +555,6 @@ export default function Settings() {
           )}
         </motion.div>
       </main>
-    </div>
+    </AppLayout>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { ModelSelector } from '@/components/ModelSelector';
 import { ChatInput } from '@/components/ChatInput';
 import { ResponseGrid } from '@/components/ResponseGrid';
@@ -241,8 +241,7 @@ export default function Index() {
 
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <AppLayout>
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
         {/* Usage Alert for Free Users */}
@@ -450,6 +449,6 @@ export default function Index() {
       </main>
 
       <BackgroundEffects />
-    </div>
+    </AppLayout>
   );
 }

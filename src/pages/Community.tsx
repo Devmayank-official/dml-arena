@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { StatsOverview } from '@/components/leaderboard/StatsOverview';
 import { ModelRankingTable } from '@/components/leaderboard/ModelRankingTable';
@@ -63,9 +63,8 @@ export default function Community() {
   const isLoading = activeTab === 'feed' ? feedLoading : statsLoading;
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       <BackgroundEffects />
-      <Header />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8 relative z-10">
         {/* Page Header */}
@@ -260,6 +259,6 @@ export default function Community() {
           </TabsContent>
         </Tabs>
       </main>
-    </div>
+    </AppLayout>
   );
 }

@@ -1,4 +1,4 @@
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { useHistory } from '@/hooks/useHistory';
@@ -57,8 +57,7 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <AppLayout>
         <main className="container mx-auto px-4 py-8">
           <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
@@ -66,13 +65,12 @@ export default function Dashboard() {
             ))}
           </div>
         </main>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <AppLayout>
       
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* Page Header */}
@@ -375,6 +373,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </main>
-    </div>
+    </AppLayout>
   );
 }

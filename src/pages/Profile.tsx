@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { AI_MODELS } from '@/lib/models';
@@ -97,22 +97,20 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <AppLayout>
         <main className="container mx-auto px-4 py-16 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4 animate-pulse">
             <User className="h-8 w-8 text-muted-foreground" />
           </div>
           <p className="text-muted-foreground">Loading profile...</p>
         </main>
-      </div>
+      </AppLayout>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <AppLayout>
         <main className="container mx-auto px-4 py-16 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
             <User className="h-8 w-8 text-muted-foreground" />
@@ -126,19 +124,17 @@ export default function Profile() {
             </Button>
           </Link>
         </main>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
       </div>
-
-      <Header />
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 relative z-10">
         {/* Back button */}
@@ -387,6 +383,6 @@ export default function Profile() {
           </motion.div>
         </div>
       </main>
-    </div>
+    </AppLayout>
   );
 }
