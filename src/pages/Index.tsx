@@ -13,6 +13,7 @@ import { StreamingIndicator } from '@/components/StreamingIndicator';
 import { QuickReRun } from '@/components/QuickReRun';
 import { CategoryBadge } from '@/components/CategoryBadge';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { ConversationThread } from '@/components/ConversationThread';
 import { AI_MODELS } from '@/lib/models';
 import { classifyQuery, type QueryCategory } from '@/lib/queryCategories';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
@@ -22,6 +23,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useConversation } from '@/hooks/useConversation';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -63,6 +65,7 @@ export default function Index() {
   const deepDebate = useDeepDebate();
   const history = useHistory(settings.autoSaveHistory);
   const streaming = useStreamingComparison();
+  const conversation = useConversation();
 
   // Initialize selected models from settings
   useEffect(() => {
@@ -119,6 +122,11 @@ export default function Index() {
           currentCategory,
           !r.error
         );
+      }
+      
+      // Update conversation turn with responses
+      if (conversation.currentTurnId) {
+        conversation.updateTurn(conversation.currentTurnId, formattedResponses);
       }
       
       history.saveComparison(currentQuery, formattedResponses).then(id => {
@@ -198,15 +206,22 @@ export default function Index() {
     const category = classifyQuery(message);
     setCurrentCategory(category);
     
+    // Add new turn to conversation
+    conversation.addTurn(message);
+    
+    // Get context from previous turns
+    const contextMessages = conversation.getContextMessages();
+    
     streaming.reset();
     
-    // Start streaming comparison
-    streaming.startComparison(message, selectedModels);
+    // Start streaming comparison with context
+    streaming.startComparison(message, selectedModels, contextMessages);
   };
 
   const handleClearHistory = () => {
     streaming.reset();
     deepDebate.reset();
+    conversation.clearConversation();
     setCurrentDebateId(null);
     setCurrentComparisonId(null);
     setCurrentQuery('');
@@ -266,6 +281,16 @@ export default function Index() {
             onSettingsChange={setDeepModeSettings}
           />
         </section>
+
+        {/* Conversation Thread - Shows previous turns */}
+        {!deepMode && conversation.turns.length > 0 && (
+          <section className="max-w-3xl mx-auto">
+            <ConversationThread 
+              turns={conversation.turns.slice(0, -1)} // Exclude current turn
+              onClearConversation={conversation.clearConversation}
+            />
+          </section>
+        )}
 
         {/* Chat Input */}
         <section className="max-w-3xl mx-auto" data-tour="chat-input">

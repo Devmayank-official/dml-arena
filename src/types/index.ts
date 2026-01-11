@@ -48,3 +48,26 @@ export interface QueryHistory {
   responses: ModelResponse[];
   timestamp: Date;
 }
+
+// Conversation threading types
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  model?: string;
+  timestamp: Date;
+}
+
+export interface ConversationTurn {
+  id: string;
+  query: string;
+  responses: ModelResponse[];
+  timestamp: Date;
+}
+
+export interface Conversation {
+  id: string;
+  turns: ConversationTurn[];
+  selectedModels: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
