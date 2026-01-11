@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { useHistory } from '@/hooks/useHistory';
 import { useSettings } from '@/hooks/useSettings';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -142,9 +142,8 @@ export default function History() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       <BackgroundEffects />
-      <Header />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8 relative z-10 max-w-5xl">
         <motion.div
@@ -421,6 +420,6 @@ export default function History() {
           )}
         </motion.div>
       </main>
-    </div>
+    </AppLayout>
   );
 }

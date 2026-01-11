@@ -13,7 +13,7 @@ import {
 import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Header } from '@/components/Header';
+import { AppLayout } from '@/components/AppLayout';
 import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { getModelById } from '@/lib/models';
 import {
@@ -124,9 +124,8 @@ export default function Insights() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <AppLayout>
       <BackgroundEffects />
-      <Header />
 
       <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8 relative z-10 max-w-6xl">
         <motion.div
@@ -420,6 +419,6 @@ export default function Insights() {
           )}
         </motion.div>
       </main>
-    </div>
+    </AppLayout>
   );
 }

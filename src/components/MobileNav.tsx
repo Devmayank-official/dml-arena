@@ -86,7 +86,8 @@ export function MobileNav() {
             dragConstraints={{ left: -300, right: 0 }}
             dragElastic={0.1}
             onDragEnd={handleDragEnd}
-            className="fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 md:hidden shadow-xl"
+            className="fixed inset-y-0 left-0 w-72 border-r border-border z-50 md:hidden shadow-xl"
+            style={{ backgroundColor: 'hsl(var(--card))' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
