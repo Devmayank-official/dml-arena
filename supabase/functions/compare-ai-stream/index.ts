@@ -28,17 +28,30 @@ interface StreamEvent {
   error?: string;
 }
 
+interface ContextMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 async function streamModel(
   model: string,
   message: string,
   apiKey: string,
-  sendEvent: (event: StreamEvent) => void
+  sendEvent: (event: StreamEvent) => void,
+  contextMessages: ContextMessage[] = []
 ): Promise<void> {
   const startTime = Date.now();
   
   try {
-    console.log(`Starting stream for model: ${model}`);
+    console.log(`Starting stream for model: ${model} with ${contextMessages.length} context messages`);
     sendEvent({ type: 'start', model });
+    
+    // Build messages array with context
+    const messages = [
+      { role: "system", content: "You are a helpful AI assistant. Provide clear, concise, and accurate responses. When responding to follow-up questions, consider the conversation context." },
+      ...contextMessages.map(msg => ({ role: msg.role, content: msg.content })),
+      { role: "user", content: message },
+    ];
     
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -48,10 +61,7 @@ async function streamModel(
       },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: "system", content: "You are a helpful AI assistant. Provide clear, concise, and accurate responses." },
-          { role: "user", content: message },
-        ],
+        messages,
         stream: true,
       }),
     });
@@ -177,7 +187,12 @@ serve(async (req) => {
   }
 
   try {
-    const { message, models } = await req.json();
+    const { message, models, contextMessages } = await req.json();
+    
+    // Validate context messages
+    const validContextMessages: ContextMessage[] = Array.isArray(contextMessages) 
+      ? contextMessages.filter(m => m && typeof m.role === 'string' && typeof m.content === 'string')
+      : [];
     
     if (!message || typeof message !== 'string') {
       return new Response(
@@ -206,7 +221,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Starting streaming for ${selectedModels.length} models`);
+    console.log(`Starting streaming for ${selectedModels.length} models with ${validContextMessages.length} context messages`);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -218,7 +233,7 @@ serve(async (req) => {
         // Stream all models in parallel
         await Promise.all(
           selectedModels.map((model: string) => 
-            streamModel(model, message, LOVABLE_API_KEY, sendEvent)
+            streamModel(model, message, LOVABLE_API_KEY, sendEvent, validContextMessages)
           )
         );
 

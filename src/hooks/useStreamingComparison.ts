@@ -30,7 +30,11 @@ export function useStreamingComparison() {
   const [streamingModels, setStreamingModels] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const startComparison = useCallback(async (message: string, models: string[]) => {
+  const startComparison = useCallback(async (
+    message: string, 
+    models: string[],
+    contextMessages: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  ) => {
     // Cancel any existing stream
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -50,7 +54,7 @@ export function useStreamingComparison() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ message, models }),
+          body: JSON.stringify({ message, models, contextMessages }),
           signal: abortControllerRef.current.signal,
         }
       );
