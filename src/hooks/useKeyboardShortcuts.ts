@@ -173,6 +173,75 @@ export function useKeyboardShortcuts() {
         deepModeSwitch?.click();
       },
     },
+    // Preset shortcuts
+    {
+      key: 'p',
+      modifiers: ['ctrl'],
+      description: 'Open preset selector',
+      category: 'comparison',
+      action: () => {
+        const presetBtn = document.querySelector('[data-action="preset-selector"]') as HTMLElement;
+        presetBtn?.click();
+      },
+    },
+    {
+      key: '1',
+      modifiers: ['ctrl', 'shift'],
+      description: 'Apply Coding preset',
+      category: 'comparison',
+      action: () => {
+        const presetBtn = document.querySelector('[data-preset="coding"]') as HTMLElement;
+        presetBtn?.click();
+      },
+    },
+    {
+      key: '2',
+      modifiers: ['ctrl', 'shift'],
+      description: 'Apply Creative preset',
+      category: 'comparison',
+      action: () => {
+        const presetBtn = document.querySelector('[data-preset="creative"]') as HTMLElement;
+        presetBtn?.click();
+      },
+    },
+    {
+      key: '3',
+      modifiers: ['ctrl', 'shift'],
+      description: 'Apply Analysis preset',
+      category: 'comparison',
+      action: () => {
+        const presetBtn = document.querySelector('[data-preset="analysis"]') as HTMLElement;
+        presetBtn?.click();
+      },
+    },
+    {
+      key: '4',
+      modifiers: ['ctrl', 'shift'],
+      description: 'Apply Quick preset',
+      category: 'comparison',
+      action: () => {
+        const presetBtn = document.querySelector('[data-preset="quick"]') as HTMLElement;
+        presetBtn?.click();
+      },
+    },
+    // Focus/Send shortcut
+    {
+      key: 'Enter',
+      modifiers: ['ctrl'],
+      description: 'Focus input and send',
+      category: 'actions',
+      action: () => {
+        const textarea = document.querySelector('[data-tour="chat-input"] textarea') as HTMLTextAreaElement;
+        if (textarea) {
+          textarea.focus();
+          // If there's content, trigger submit
+          if (textarea.value.trim()) {
+            const sendBtn = document.querySelector('[data-action="send-message"]') as HTMLElement;
+            sendBtn?.click();
+          }
+        }
+      },
+    },
   ];
 
   const clickModelByIndex = (index: number) => {

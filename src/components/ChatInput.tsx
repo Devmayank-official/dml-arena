@@ -119,6 +119,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
             type="submit"
             size="icon"
             disabled={!input.trim() || isLoading || disabled}
+            data-action="send-message"
             className={cn(
               "shrink-0 h-9 w-9 sm:h-10 sm:w-10 rounded-lg",
               "bg-primary hover:bg-primary/90 text-primary-foreground",
