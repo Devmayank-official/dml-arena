@@ -76,7 +76,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" data-action="preset-selector">
             <Layers className="h-4 w-4" />
             <span className="hidden sm:inline">Presets</span>
             <ChevronDown className="h-3 w-3" />
@@ -92,6 +92,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
               <button
                 key={preset.id}
                 onClick={() => handleApplyPreset(preset)}
+                data-preset={preset.id}
                 className={cn(
                   "w-full flex items-start gap-3 p-2.5 rounded-lg transition-all",
                   "hover:bg-secondary/50 text-left group"
