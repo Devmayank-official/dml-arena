@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard, BarChart3, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard, BarChart3, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -142,9 +142,9 @@ export function Header() {
               onClick={sidebar.toggleSidebar}
             >
               {sidebar.open ? (
-                <PanelRightClose className="h-4 w-4" />
+                <PanelLeftClose className="h-4 w-4" />
               ) : (
-                <PanelRightOpen className="h-4 w-4" />
+                <PanelLeftOpen className="h-4 w-4" />
               )}
               <span className="hidden lg:inline">Sidebar</span>
             </Button>

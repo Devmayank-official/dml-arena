@@ -16,11 +16,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="min-h-screen flex flex-col w-full">
         <Header />
         <div className="flex flex-1 w-full">
+          {/* Desktop sidebar on left side - hidden on mobile */}
+          {!isMobile && <AppSidebar />}
           <main className="flex-1 min-w-0">
             {children}
           </main>
-          {/* Desktop sidebar on right side - hidden on mobile */}
-          {!isMobile && <AppSidebar />}
         </div>
       </div>
     </SidebarProvider>

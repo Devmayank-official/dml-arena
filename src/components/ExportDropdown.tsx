@@ -1,4 +1,4 @@
-import { Download, FileJson, FileText, FileCode, File, Lock } from 'lucide-react';
+import { Download, FileJson, FileText, FileCode, FileDown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -61,14 +61,11 @@ export function ExportDropdown({ query, responses, createdAt, disabled }: Export
           break;
         case 'pdf':
           await exportAsPDF(data);
+          toast({
+            title: 'PDF exported',
+            description: 'Downloaded as PDF file',
+          });
           break;
-      }
-      
-      if (format !== 'pdf') {
-        toast({
-          title: 'Export successful',
-          description: `Downloaded as ${format.toUpperCase()} file`,
-        });
       }
     } catch (error) {
       toast({
@@ -110,8 +107,8 @@ export function ExportDropdown({ query, responses, createdAt, disabled }: Export
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={() => handleExport('pdf')} className="gap-2 cursor-pointer">
-          <File className="h-4 w-4" />
-          PDF (Print)
+          <FileDown className="h-4 w-4" />
+          PDF Document
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('json')} className="gap-2 cursor-pointer">
           <FileJson className="h-4 w-4" />
