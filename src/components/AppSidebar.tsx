@@ -85,7 +85,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar side="right" variant="sidebar" collapsible="icon">
+    <Sidebar side="left" variant="sidebar" collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">

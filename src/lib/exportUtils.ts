@@ -1,3 +1,4 @@
+import { jsPDF } from 'jspdf';
 import { AI_MODELS } from './models';
 
 interface TokenUsage {
@@ -136,59 +137,102 @@ export function exportAsMarkdown(data: ExportData): void {
 }
 
 export async function exportAsPDF(data: ExportData): Promise<void> {
-  // Create a printable HTML document
-  const modelResponses = data.responses.map(r => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+  const contentWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  // Helper to add new page if needed
+  const checkPageBreak = (neededHeight: number) => {
+    if (y + neededHeight > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
+      return true;
+    }
+    return false;
+  };
+
+  // Title
+  doc.setFontSize(24);
+  doc.setTextColor(99, 102, 241); // Primary color
+  doc.text('AI Model Comparison', margin, y);
+  y += 12;
+
+  // Date
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139); // Muted color
+  doc.text(`Generated: ${data.createdAt ? new Date(data.createdAt).toLocaleString() : new Date().toLocaleString()}`, margin, y);
+  y += 15;
+
+  // Query box
+  doc.setFillColor(241, 245, 249); // Light gray background
+  doc.setDrawColor(99, 102, 241); // Primary border
+  const queryLines = doc.splitTextToSize(`Query: ${data.query}`, contentWidth - 10);
+  const queryHeight = queryLines.length * 6 + 10;
+  doc.roundedRect(margin, y, contentWidth, queryHeight, 3, 3, 'FD');
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(11);
+  doc.text(queryLines, margin + 5, y + 8);
+  y += queryHeight + 15;
+
+  // Separator line
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 15;
+
+  // Responses
+  for (const r of data.responses) {
     const modelName = getModelName(r.model);
-    return `
-      <div style="margin-bottom: 24px; page-break-inside: avoid;">
-        <h2 style="color: #6366f1; margin-bottom: 12px; font-size: 18px;">${modelName}</h2>
-        ${r.error 
-          ? `<p style="color: #ef4444; padding: 12px; background: #fef2f2; border-radius: 8px;">Error: ${escapeHTML(r.error)}</p>` 
-          : `<div style="white-space: pre-wrap; line-height: 1.6; background: #f8fafc; padding: 16px; border-radius: 8px;">${escapeHTML(r.response)}</div>`
-        }
-        <p style="color: #64748b; margin-top: 8px; font-size: 12px;">
-          Duration: ${r.duration}ms${r.tokens ? ` | Tokens: ${r.tokens.total}` : ''}
-        </p>
-      </div>
-    `;
-  }).join('');
+    
+    checkPageBreak(50);
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>AI Comparison</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-        h1 { color: #1e293b; }
-        .query { background: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6366f1; }
-        .meta { color: #64748b; font-size: 14px; }
-        hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
-      </style>
-    </head>
-    <body>
-      <h1>AI Model Comparison</h1>
-      <div class="query">
-        <strong>Query:</strong> ${escapeHTML(data.query)}
-      </div>
-      <p class="meta">Generated: ${data.createdAt ? new Date(data.createdAt).toLocaleString() : new Date().toLocaleString()}</p>
-      <hr>
-      ${modelResponses}
-    </body>
-    </html>
-  `;
+    // Model name
+    doc.setFontSize(14);
+    doc.setTextColor(99, 102, 241);
+    doc.text(modelName, margin, y);
+    y += 8;
 
-  // Open print dialog
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
+    // Response content
+    doc.setFontSize(10);
+    doc.setTextColor(51, 65, 85);
+    
+    const responseText = r.error ? `Error: ${r.error}` : r.response;
+    const responseLines = doc.splitTextToSize(responseText, contentWidth);
+    
+    // Calculate if we need multiple pages
+    const lineHeight = 5;
+    for (let i = 0; i < responseLines.length; i++) {
+      checkPageBreak(lineHeight + 5);
+      doc.text(responseLines[i], margin, y);
+      y += lineHeight;
+    }
+    y += 5;
+
+    // Duration and tokens
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    const metaText = `Duration: ${r.duration}ms${r.tokens ? ` | Tokens: ${r.tokens.total}` : ''}`;
+    doc.text(metaText, margin, y);
+    y += 15;
+
+    // Separator between responses
+    if (data.responses.indexOf(r) < data.responses.length - 1) {
+      checkPageBreak(10);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(margin, y - 5, pageWidth - margin, y - 5);
+      y += 5;
+    }
   }
+
+  // Footer on last page
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text('Generated by CompareAI', margin, pageHeight - 10);
+
+  // Download the PDF
+  doc.save(`comparison-${Date.now()}.pdf`);
 }
 
 function downloadBlob(blob: Blob, filename: string): void {
