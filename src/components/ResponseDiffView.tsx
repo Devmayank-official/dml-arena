@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeftRight, X, Eye, EyeOff, Percent } from 'lucide-react';
+import { ArrowLeftRight, X, Eye, EyeOff, Percent, Columns2, Columns3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { getModelById } from '@/lib/models';
@@ -45,19 +45,61 @@ function DiffHighlightedText({ segments }: { segments: DiffSegment[] }) {
   );
 }
 
+function ModelPanel({ 
+  model, 
+  response, 
+  diffSegments, 
+  showDiffHighlight 
+}: { 
+  model: string; 
+  response: ModelResponse | undefined; 
+  diffSegments: DiffSegment[];
+  showDiffHighlight: boolean;
+}) {
+  const modelInfo = getModelById(model);
+  
+  return (
+    <div className="flex flex-col min-w-0">
+      <div className="flex items-center gap-2 px-4 py-2 bg-secondary/20 border-b border-border">
+        <div className={cn(
+          "w-2 h-2 rounded-full flex-shrink-0",
+          modelInfo?.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500'
+        )} />
+        <span className="font-medium text-sm truncate">{modelInfo?.name}</span>
+        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">
+          {((response?.duration || 0) / 1000).toFixed(2)}s
+        </span>
+      </div>
+      <div className="p-4 max-h-[400px] overflow-y-auto">
+        {response ? (
+          showDiffHighlight && diffSegments.length > 0 ? (
+            <DiffHighlightedText segments={diffSegments} />
+          ) : (
+            <MarkdownContent content={response.response} className="text-sm" />
+          )
+        ) : (
+          <p className="text-muted-foreground text-sm">Select a model</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) {
   const validResponses = responses.filter(r => !r.error && r.response);
   const [leftModel, setLeftModel] = useState<string>(validResponses[0]?.model || '');
+  const [middleModel, setMiddleModel] = useState<string>(validResponses[2]?.model || '');
   const [rightModel, setRightModel] = useState<string>(validResponses[1]?.model || '');
   const [showDiffHighlight, setShowDiffHighlight] = useState(true);
+  const [tripleMode, setTripleMode] = useState(false);
+
+  const canTripleCompare = validResponses.length >= 3;
 
   const leftResponse = validResponses.find(r => r.model === leftModel);
+  const middleResponse = validResponses.find(r => r.model === middleModel);
   const rightResponse = validResponses.find(r => r.model === rightModel);
 
-  const leftModelInfo = getModelById(leftModel);
-  const rightModelInfo = getModelById(rightModel);
-
-  // Compute word-level diff
+  // Compute word-level diffs for 2-way comparison
   const { leftDiff, rightDiff, similarity } = useMemo(() => {
     if (!leftResponse?.response || !rightResponse?.response) {
       return { leftDiff: [], rightDiff: [], similarity: 0 };
@@ -68,6 +110,38 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
     
     return { leftDiff: left, rightDiff: right, similarity: sim };
   }, [leftResponse?.response, rightResponse?.response]);
+
+  // Compute diffs for 3-way comparison (left vs middle, middle vs right)
+  const tripleDiffs = useMemo(() => {
+    if (!tripleMode || !leftResponse?.response || !middleResponse?.response || !rightResponse?.response) {
+      return {
+        leftDiff: [],
+        middleDiffLeft: [],
+        middleDiffRight: [],
+        rightDiff: [],
+        simLeftMiddle: 0,
+        simMiddleRight: 0,
+        simLeftRight: 0,
+      };
+    }
+
+    const { left: lm1, right: lm2 } = computeWordDiff(leftResponse.response, middleResponse.response);
+    const { left: mr1, right: mr2 } = computeWordDiff(middleResponse.response, rightResponse.response);
+    
+    const simLM = getSimilarityPercentage(leftResponse.response, middleResponse.response);
+    const simMR = getSimilarityPercentage(middleResponse.response, rightResponse.response);
+    const simLR = getSimilarityPercentage(leftResponse.response, rightResponse.response);
+
+    return {
+      leftDiff: lm1,
+      middleDiffLeft: lm2,
+      middleDiffRight: mr1,
+      rightDiff: mr2,
+      simLeftMiddle: simLM,
+      simMiddleRight: simMR,
+      simLeftRight: simLR,
+    };
+  }, [tripleMode, leftResponse?.response, middleResponse?.response, rightResponse?.response]);
 
   if (validResponses.length < 2) {
     return (
@@ -80,6 +154,10 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
     );
   }
 
+  const selectedModels = tripleMode 
+    ? [leftModel, middleModel, rightModel] 
+    : [leftModel, rightModel];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -88,18 +166,46 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
       className="rounded-xl border border-border bg-card overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/30">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/30 flex-wrap gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <ArrowLeftRight className="h-4 w-4 text-primary" />
             <span className="font-medium text-sm">Compare Responses</span>
           </div>
-          <Badge variant="outline" className="gap-1">
-            <Percent className="h-3 w-3" />
-            {similarity}% similar
-          </Badge>
+          {tripleMode ? (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Percent className="h-3 w-3" />
+                L↔M: {tripleDiffs.simLeftMiddle}%
+              </Badge>
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Percent className="h-3 w-3" />
+                M↔R: {tripleDiffs.simMiddleRight}%
+              </Badge>
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Percent className="h-3 w-3" />
+                L↔R: {tripleDiffs.simLeftRight}%
+              </Badge>
+            </div>
+          ) : (
+            <Badge variant="outline" className="gap-1">
+              <Percent className="h-3 w-3" />
+              {similarity}% similar
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          {canTripleCompare && (
+            <Button
+              variant={tripleMode ? "secondary" : "ghost"}
+              size="sm"
+              className="gap-1.5 h-7 text-xs"
+              onClick={() => setTripleMode(!tripleMode)}
+            >
+              {tripleMode ? <Columns3 className="h-3 w-3" /> : <Columns2 className="h-3 w-3" />}
+              {tripleMode ? '3-Way' : '2-Way'}
+            </Button>
+          )}
           <Button
             variant={showDiffHighlight ? "secondary" : "ghost"}
             size="sm"
@@ -131,9 +237,14 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
       )}
 
       {/* Model Selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border-b border-border">
+      <div className={cn(
+        "grid gap-4 p-4 border-b border-border",
+        tripleMode ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
+      )}>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Left Model</label>
+          <label className="text-xs font-medium text-muted-foreground">
+            {tripleMode ? 'Left Model' : 'Left Model'}
+          </label>
           <Select value={leftModel} onValueChange={setLeftModel}>
             <SelectTrigger className="bg-background">
               <SelectValue placeholder="Select model" />
@@ -142,7 +253,11 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
               {validResponses.map(r => {
                 const model = getModelById(r.model);
                 return (
-                  <SelectItem key={r.model} value={r.model} disabled={r.model === rightModel}>
+                  <SelectItem 
+                    key={r.model} 
+                    value={r.model} 
+                    disabled={selectedModels.includes(r.model) && r.model !== leftModel}
+                  >
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         "w-2 h-2 rounded-full",
@@ -156,6 +271,38 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
             </SelectContent>
           </Select>
         </div>
+
+        {tripleMode && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Middle Model</label>
+            <Select value={middleModel} onValueChange={setMiddleModel}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent>
+                {validResponses.map(r => {
+                  const model = getModelById(r.model);
+                  return (
+                    <SelectItem 
+                      key={r.model} 
+                      value={r.model} 
+                      disabled={selectedModels.includes(r.model) && r.model !== middleModel}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={cn(
+                          "w-2 h-2 rounded-full",
+                          model?.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500'
+                        )} />
+                        {model?.name || r.model}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground">Right Model</label>
           <Select value={rightModel} onValueChange={setRightModel}>
@@ -166,7 +313,11 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
               {validResponses.map(r => {
                 const model = getModelById(r.model);
                 return (
-                  <SelectItem key={r.model} value={r.model} disabled={r.model === leftModel}>
+                  <SelectItem 
+                    key={r.model} 
+                    value={r.model} 
+                    disabled={selectedModels.includes(r.model) && r.model !== rightModel}
+                  >
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         "w-2 h-2 rounded-full",
@@ -183,56 +334,35 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
       </div>
 
       {/* Side by Side Comparison */}
-      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+      <div className={cn(
+        "grid divide-y md:divide-y-0 md:divide-x divide-border",
+        tripleMode ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
+      )}>
         {/* Left Panel */}
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 px-4 py-2 bg-secondary/20 border-b border-border">
-            <div className={cn(
-              "w-2 h-2 rounded-full",
-              leftModelInfo?.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500'
-            )} />
-            <span className="font-medium text-sm">{leftModelInfo?.name}</span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              {((leftResponse?.duration || 0) / 1000).toFixed(2)}s
-            </span>
-          </div>
-          <div className="p-4 max-h-[400px] overflow-y-auto">
-            {leftResponse ? (
-              showDiffHighlight && leftDiff.length > 0 ? (
-                <DiffHighlightedText segments={leftDiff} />
-              ) : (
-                <MarkdownContent content={leftResponse.response} className="text-sm" />
-              )
-            ) : (
-              <p className="text-muted-foreground text-sm">Select a model</p>
-            )}
-          </div>
-        </div>
+        <ModelPanel
+          model={leftModel}
+          response={leftResponse}
+          diffSegments={tripleMode ? tripleDiffs.leftDiff : leftDiff}
+          showDiffHighlight={showDiffHighlight}
+        />
+
+        {/* Middle Panel (3-way only) */}
+        {tripleMode && (
+          <ModelPanel
+            model={middleModel}
+            response={middleResponse}
+            diffSegments={tripleDiffs.middleDiffLeft}
+            showDiffHighlight={showDiffHighlight}
+          />
+        )}
 
         {/* Right Panel */}
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 px-4 py-2 bg-secondary/20 border-b border-border">
-            <div className={cn(
-              "w-2 h-2 rounded-full",
-              rightModelInfo?.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500'
-            )} />
-            <span className="font-medium text-sm">{rightModelInfo?.name}</span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              {((rightResponse?.duration || 0) / 1000).toFixed(2)}s
-            </span>
-          </div>
-          <div className="p-4 max-h-[400px] overflow-y-auto">
-            {rightResponse ? (
-              showDiffHighlight && rightDiff.length > 0 ? (
-                <DiffHighlightedText segments={rightDiff} />
-              ) : (
-                <MarkdownContent content={rightResponse.response} className="text-sm" />
-              )
-            ) : (
-              <p className="text-muted-foreground text-sm">Select a model</p>
-            )}
-          </div>
-        </div>
+        <ModelPanel
+          model={rightModel}
+          response={rightResponse}
+          diffSegments={tripleMode ? tripleDiffs.rightDiff : rightDiff}
+          showDiffHighlight={showDiffHighlight}
+        />
       </div>
     </motion.div>
   );
