@@ -2,6 +2,7 @@ import { Copy, Check, Clock, AlertCircle, Zap, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { VotingButtons } from '@/components/VotingButtons';
+import { QualityRating } from '@/components/QualityRating';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { getModelById } from '@/lib/models';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,9 @@ interface ResponseCardProps {
   onVote?: (type: 'up' | 'down') => void;
   showVoting?: boolean;
   onRegenerate?: () => void;
+  currentRating?: number | null;
+  onRate?: (rating: number) => void;
+  showRating?: boolean;
 }
 
 export function ResponseCard({ 
@@ -43,7 +47,10 @@ export function ResponseCard({
   currentVote,
   onVote,
   showVoting = false,
-  onRegenerate
+  onRegenerate,
+  currentRating,
+  onRate,
+  showRating = false
 }: ResponseCardProps) {
   const [copied, setCopied] = useState(false);
   const model = getModelById(modelId);
@@ -123,6 +130,14 @@ export function ResponseCard({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              )}
+              
+              {showRating && onRate && (
+                <QualityRating
+                  rating={currentRating ?? null}
+                  onRate={onRate}
+                  disabled={isLoading || isStreaming}
+                />
               )}
               
               {showVoting && onVote && (

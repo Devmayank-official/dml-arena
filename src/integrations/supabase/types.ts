@@ -181,6 +181,39 @@ export type Database = {
         }
         Relationships: []
       }
+      response_ratings: {
+        Row: {
+          created_at: string
+          history_id: string
+          history_type: string
+          id: string
+          model_id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          history_id: string
+          history_type: string
+          id?: string
+          model_id: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          history_id?: string
+          history_type?: string
+          id?: string
+          model_id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       response_votes: {
         Row: {
           created_at: string
