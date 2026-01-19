@@ -24,6 +24,7 @@ import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useConversation } from '@/hooks/useConversation';
+import { useRatings } from '@/hooks/useRatings';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,7 @@ export default function Index() {
   const history = useHistory(settings.autoSaveHistory);
   const streaming = useStreamingComparison();
   const conversation = useConversation();
+  const ratings = useRatings(settings.autoSaveHistory);
 
   // Initialize selected models from settings
   useEffect(() => {
@@ -432,6 +434,9 @@ export default function Index() {
               onVote={(modelId, type) => currentComparisonId && handleVote(currentComparisonId, modelId, type)}
               getVote={(modelId) => currentComparisonId ? history.getVote(currentComparisonId, modelId) : null}
               onRegenerate={!streaming.isLoading ? handleRegenerate : undefined}
+              showRating={!!currentComparisonId && !!history.user}
+              onRate={(modelId, rating) => currentComparisonId && ratings.rate(currentComparisonId, 'comparison', modelId, rating)}
+              getRating={(modelId) => currentComparisonId ? ratings.getRating(currentComparisonId, modelId) : null}
             />
           </section>
         )}

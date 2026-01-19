@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeftRight, X, Eye, EyeOff, Percent, Columns2, Columns3 } from 'lucide-react';
+import { ArrowLeftRight, X, Eye, EyeOff, Percent, Columns2, Columns3, Link2, Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { getModelById } from '@/lib/models';
@@ -27,6 +27,8 @@ interface ResponseDiffViewProps {
   onClose: () => void;
 }
 
+type ScrollRef = React.RefObject<HTMLDivElement | null>;
+
 function DiffHighlightedText({ segments }: { segments: DiffSegment[] }) {
   return (
     <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
@@ -49,12 +51,16 @@ function ModelPanel({
   model, 
   response, 
   diffSegments, 
-  showDiffHighlight 
+  showDiffHighlight,
+  scrollRef,
+  onScroll
 }: { 
   model: string; 
   response: ModelResponse | undefined; 
   diffSegments: DiffSegment[];
   showDiffHighlight: boolean;
+  scrollRef?: ScrollRef;
+  onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
 }) {
   const modelInfo = getModelById(model);
   
@@ -70,7 +76,11 @@ function ModelPanel({
           {((response?.duration || 0) / 1000).toFixed(2)}s
         </span>
       </div>
-      <div className="p-4 max-h-[400px] overflow-y-auto">
+      <div 
+        ref={scrollRef}
+        onScroll={onScroll}
+        className="p-4 max-h-[400px] overflow-y-auto scroll-smooth"
+      >
         {response ? (
           showDiffHighlight && diffSegments.length > 0 ? (
             <DiffHighlightedText segments={diffSegments} />
@@ -92,8 +102,40 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
   const [rightModel, setRightModel] = useState<string>(validResponses[1]?.model || '');
   const [showDiffHighlight, setShowDiffHighlight] = useState(true);
   const [tripleMode, setTripleMode] = useState(false);
+  const [syncScroll, setSyncScroll] = useState(true);
+
+  // Refs for scroll synchronization
+  const leftScrollRef = useRef<HTMLDivElement>(null);
+  const middleScrollRef = useRef<HTMLDivElement>(null);
+  const rightScrollRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef<boolean>(false);
 
   const canTripleCompare = validResponses.length >= 3;
+
+  // Sync scroll handler
+  const handleSyncScroll = useCallback((source: 'left' | 'middle' | 'right') => (e: React.UIEvent<HTMLDivElement>) => {
+    if (!syncScroll || isScrollingRef.current) return;
+    
+    isScrollingRef.current = true;
+    const target = e.currentTarget;
+    const scrollRatio = target.scrollTop / (target.scrollHeight - target.clientHeight);
+    
+    const scrollToRatio = (ref: React.RefObject<HTMLDivElement | null>) => {
+      if (ref.current && ref !== (source === 'left' ? leftScrollRef : source === 'middle' ? middleScrollRef : rightScrollRef)) {
+        const maxScroll = ref.current.scrollHeight - ref.current.clientHeight;
+        ref.current.scrollTop = scrollRatio * maxScroll;
+      }
+    };
+    
+    if (source !== 'left') scrollToRatio(leftScrollRef);
+    if (tripleMode && source !== 'middle') scrollToRatio(middleScrollRef);
+    if (source !== 'right') scrollToRatio(rightScrollRef);
+    
+    // Debounce to prevent scroll loops
+    requestAnimationFrame(() => {
+      isScrollingRef.current = false;
+    });
+  }, [syncScroll, tripleMode]);
 
   const leftResponse = validResponses.find(r => r.model === leftModel);
   const middleResponse = validResponses.find(r => r.model === middleModel);
@@ -206,6 +248,15 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
               {tripleMode ? '3-Way' : '2-Way'}
             </Button>
           )}
+          <Button
+            variant={syncScroll ? "secondary" : "ghost"}
+            size="sm"
+            className="gap-1.5 h-7 text-xs"
+            onClick={() => setSyncScroll(!syncScroll)}
+          >
+            {syncScroll ? <Link2 className="h-3 w-3" /> : <Link2Off className="h-3 w-3" />}
+            Sync
+          </Button>
           <Button
             variant={showDiffHighlight ? "secondary" : "ghost"}
             size="sm"
@@ -344,6 +395,8 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
           response={leftResponse}
           diffSegments={tripleMode ? tripleDiffs.leftDiff : leftDiff}
           showDiffHighlight={showDiffHighlight}
+          scrollRef={leftScrollRef}
+          onScroll={handleSyncScroll('left')}
         />
 
         {/* Middle Panel (3-way only) */}
@@ -353,6 +406,8 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
             response={middleResponse}
             diffSegments={tripleDiffs.middleDiffLeft}
             showDiffHighlight={showDiffHighlight}
+            scrollRef={middleScrollRef}
+            onScroll={handleSyncScroll('middle')}
           />
         )}
 
@@ -362,6 +417,8 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
           response={rightResponse}
           diffSegments={tripleMode ? tripleDiffs.rightDiff : rightDiff}
           showDiffHighlight={showDiffHighlight}
+          scrollRef={rightScrollRef}
+          onScroll={handleSyncScroll('right')}
         />
       </div>
     </motion.div>

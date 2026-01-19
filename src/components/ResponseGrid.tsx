@@ -28,6 +28,9 @@ interface ResponseGridProps {
   onVote?: (modelId: string, type: 'up' | 'down') => void;
   getVote?: (modelId: string) => 'up' | 'down' | null;
   onRegenerate?: (modelId: string) => void;
+  showRating?: boolean;
+  onRate?: (modelId: string, rating: number) => void;
+  getRating?: (modelId: string) => number | null;
 }
 
 export function ResponseGrid({ 
@@ -37,7 +40,10 @@ export function ResponseGrid({
   showVoting = false,
   onVote,
   getVote,
-  onRegenerate
+  onRegenerate,
+  showRating = false,
+  onRate,
+  getRating
 }: ResponseGridProps) {
   const [showDiffView, setShowDiffView] = useState(false);
   const respondedModels = new Set(responses.map(r => r.model));
@@ -113,6 +119,9 @@ export function ResponseGrid({
               currentVote={getVote ? getVote(response.model) : null}
               onVote={onVote ? (type) => onVote(response.model, type) : undefined}
               onRegenerate={onRegenerate && !response.isStreaming && !response.error ? () => onRegenerate(response.model) : undefined}
+              showRating={showRating && !!historyId && !response.error && !response.isStreaming}
+              currentRating={getRating ? getRating(response.model) : null}
+              onRate={onRate ? (rating) => onRate(response.model, rating) : undefined}
             />
           ))}
         </div>

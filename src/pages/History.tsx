@@ -13,7 +13,9 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Star
+  Star,
+  X,
+  Sparkles
 } from 'lucide-react';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { Button } from '@/components/ui/button';
@@ -24,12 +26,13 @@ import { AppLayout } from '@/components/AppLayout';
 import { useHistory } from '@/hooks/useHistory';
 import { useSettings } from '@/hooks/useSettings';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useRatings } from '@/hooks/useRatings';
 import { ResponseGrid } from '@/components/ResponseGrid';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { BulkExport } from '@/components/BulkExport';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { getModelById } from '@/lib/models';
+import { getModelById, AI_MODELS } from '@/lib/models';
 import {
   Select,
   SelectContent,
@@ -53,18 +56,29 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
-type FilterType = 'all' | 'comparison' | 'debate' | 'favorites';
+type FilterType = 'all' | 'comparison' | 'debate' | 'favorites' | 'rated';
 type SortType = 'newest' | 'oldest';
+type DateRange = 'all' | 'today' | 'week' | 'month';
 
 export default function History() {
   const { settings } = useSettings();
   const history = useHistory(settings.autoSaveHistory);
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
+  const ratings = useRatings(settings.autoSaveHistory);
+  
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [sortOrder, setSortOrder] = useState<SortType>('newest');
+  const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Combine and filter history
@@ -94,8 +108,37 @@ export default function History() {
     // Filter by type
     if (filterType === 'favorites') {
       combined = combined.filter(h => isFavorite(h.type, h.id));
+    } else if (filterType === 'rated') {
+      combined = combined.filter(h => 
+        ratings.ratings.some(r => r.history_id === h.id)
+      );
     } else if (filterType !== 'all') {
       combined = combined.filter(h => h.type === filterType);
+    }
+
+    // Filter by date range
+    if (dateRange !== 'all') {
+      const now = new Date();
+      const cutoff = new Date();
+      switch (dateRange) {
+        case 'today':
+          cutoff.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          cutoff.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          cutoff.setMonth(now.getMonth() - 1);
+          break;
+      }
+      combined = combined.filter(h => new Date(h.created_at) >= cutoff);
+    }
+
+    // Filter by selected models
+    if (selectedModels.length > 0) {
+      combined = combined.filter(h => 
+        selectedModels.some(m => h.models.includes(m))
+      );
     }
 
     // Filter by search
@@ -115,7 +158,31 @@ export default function History() {
     });
 
     return combined;
-  }, [history.comparisonHistory, history.debateHistory, filterType, searchQuery, sortOrder, favorites, isFavorite]);
+  }, [history.comparisonHistory, history.debateHistory, filterType, searchQuery, sortOrder, dateRange, selectedModels, favorites, isFavorite, ratings.ratings]);
+
+  // Get active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterType !== 'all') count++;
+    if (dateRange !== 'all') count++;
+    if (selectedModels.length > 0) count++;
+    return count;
+  }, [filterType, dateRange, selectedModels]);
+
+  const clearAllFilters = () => {
+    setFilterType('all');
+    setDateRange('all');
+    setSelectedModels([]);
+    setSearchQuery('');
+  };
+
+  const toggleModelFilter = (modelId: string) => {
+    setSelectedModels(prev => 
+      prev.includes(modelId) 
+        ? prev.filter(m => m !== modelId)
+        : [...prev, modelId]
+    );
+  };
 
   const toggleExpanded = (id: string) => {
     setExpandedItems(prev => {
@@ -212,7 +279,7 @@ export default function History() {
           </div>
 
           {/* Filters */}
-          <Card className="p-4 bg-card border-border">
+          <Card className="p-4 bg-card border-border space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Search */}
               <div className="relative flex-1">
@@ -241,13 +308,33 @@ export default function History() {
                       Favorites
                     </span>
                   </SelectItem>
+                  <SelectItem value="rated">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      Rated
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Date Range Filter */}
+              <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
+                <SelectTrigger className="w-full sm:w-36">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">Last Week</SelectItem>
+                  <SelectItem value="month">Last Month</SelectItem>
                 </SelectContent>
               </Select>
 
               {/* Sort Order */}
               <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as SortType)}>
                 <SelectTrigger className="w-full sm:w-36">
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Clock className="h-4 w-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -255,7 +342,95 @@ export default function History() {
                   <SelectItem value="oldest">Oldest First</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Model Filter Popover */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="default" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Models
+                    {selectedModels.length > 0 && (
+                      <Badge variant="secondary" className="ml-1 h-5 px-1.5">
+                        {selectedModels.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="end">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Filter by Model</span>
+                      {selectedModels.length > 0 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setSelectedModels([])}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {AI_MODELS.map(model => (
+                        <label 
+                          key={model.id} 
+                          className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1.5 rounded-md"
+                        >
+                          <Checkbox
+                            checked={selectedModels.includes(model.id)}
+                            onCheckedChange={() => toggleModelFilter(model.id)}
+                          />
+                          <span className="text-sm">{model.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
+
+            {/* Active Filters */}
+            {activeFilterCount > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground">Active filters:</span>
+                {filterType !== 'all' && (
+                  <Badge variant="secondary" className="gap-1">
+                    {filterType}
+                    <X 
+                      className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => setFilterType('all')}
+                    />
+                  </Badge>
+                )}
+                {dateRange !== 'all' && (
+                  <Badge variant="secondary" className="gap-1">
+                    {dateRange}
+                    <X 
+                      className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => setDateRange('all')}
+                    />
+                  </Badge>
+                )}
+                {selectedModels.length > 0 && (
+                  <Badge variant="secondary" className="gap-1">
+                    {selectedModels.length} models
+                    <X 
+                      className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => setSelectedModels([])}
+                    />
+                  </Badge>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 px-2 text-xs text-muted-foreground"
+                  onClick={clearAllFilters}
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
           </Card>
 
           {/* History List */}
