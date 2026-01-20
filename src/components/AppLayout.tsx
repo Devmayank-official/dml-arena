@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,13 +8,18 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+function HeaderWithSidebar() {
+  const sidebar = useSidebar();
+  return <Header onToggleSidebar={sidebar.toggleSidebar} sidebarOpen={sidebar.open} />;
+}
+
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex flex-col w-full">
-        <Header />
+        <HeaderWithSidebar />
         <div className="flex flex-1 w-full">
           {/* Desktop sidebar on left side - hidden on mobile */}
           {!isMobile && <AppSidebar />}
