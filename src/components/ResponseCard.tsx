@@ -1,4 +1,4 @@
-import { Copy, Check, Clock, AlertCircle, Zap, RefreshCw } from 'lucide-react';
+import { Copy, Check, Clock, AlertCircle, Zap, RefreshCw, Pin, PinOff } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { VotingButtons } from '@/components/VotingButtons';
@@ -34,6 +34,10 @@ interface ResponseCardProps {
   currentRating?: number | null;
   onRate?: (rating: number) => void;
   showRating?: boolean;
+  isPinned?: boolean;
+  onPin?: () => void;
+  onUnpin?: () => void;
+  showPinning?: boolean;
 }
 
 export function ResponseCard({ 
@@ -50,7 +54,11 @@ export function ResponseCard({
   onRegenerate,
   currentRating,
   onRate,
-  showRating = false
+  showRating = false,
+  isPinned = false,
+  onPin,
+  onUnpin,
+  showPinning = false
 }: ResponseCardProps) {
   const [copied, setCopied] = useState(false);
   const model = getModelById(modelId);
@@ -145,6 +153,30 @@ export function ResponseCard({
                   currentVote={currentVote || null}
                   onVote={onVote}
                 />
+              )}
+              
+              {showPinning && (onPin || onUnpin) && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={isPinned ? 'secondary' : 'ghost'}
+                        size="icon"
+                        className={cn('h-7 w-7', isPinned && 'text-primary')}
+                        onClick={isPinned ? onUnpin : onPin}
+                      >
+                        {isPinned ? (
+                          <PinOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Pin className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isPinned ? 'Unpin response' : 'Pin response'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
               
               {onRegenerate && (

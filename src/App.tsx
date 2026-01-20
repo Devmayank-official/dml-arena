@@ -20,6 +20,7 @@ import History from "./pages/History";
 import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import Install from "./pages/Install";
+import Pinned from "./pages/Pinned";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
@@ -51,6 +52,7 @@ function AppContent() {
         <Route path="/chat/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/chat/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/chat/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+        <Route path="/chat/pinned" element={<ProtectedRoute><Pinned /></ProtectedRoute>} />
         <Route path="/chat/leaderboard" element={<Navigate to="/chat/community" replace />} />
         <Route path="/chat/share/:code" element={<ProtectedRoute><SharedResult /></ProtectedRoute>} />
         
