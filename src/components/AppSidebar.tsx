@@ -9,10 +9,12 @@ import {
   Crown,
   Settings,
   CreditCard,
+  Pin,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
+import { usePinnedResponses } from '@/hooks/usePinnedResponses';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -33,6 +35,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   requiresPro?: boolean;
+  badge?: number;
 }
 
 const mainNavItems: NavItem[] = [
@@ -51,6 +54,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { canAccessCommunity, isPro, remainingQueries } = useSubscription();
   const { user } = useAuth();
+  const { pinnedCount } = usePinnedResponses();
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -78,6 +82,11 @@ export function AppSidebar() {
           <Link to={item.href}>
             <Icon className="h-4 w-4" />
             <span>{item.label}</span>
+            {item.badge !== undefined && item.badge > 0 && (
+              <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 h-5 min-w-5 flex items-center justify-center">
+                {item.badge}
+              </Badge>
+            )}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -106,6 +115,12 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map(renderNavItem)}
+              {renderNavItem({ 
+                label: 'Pinned', 
+                href: '/chat/pinned', 
+                icon: Pin, 
+                badge: pinnedCount 
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

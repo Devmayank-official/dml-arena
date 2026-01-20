@@ -33,6 +33,7 @@ import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AI_MODELS } from '@/lib/models';
+import { ApiKeysSettings } from '@/components/ApiKeysSettings';
 import {
   Select,
   SelectContent,
@@ -421,6 +422,9 @@ export default function Settings() {
               </div>
             </div>
           </Card>
+
+          {/* API Keys Settings */}
+          <ApiKeysSettings />
 
           {/* Data Management */}
           <Card className="p-4 sm:p-6 bg-card border-border">

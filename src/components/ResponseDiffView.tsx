@@ -7,6 +7,7 @@ import { getModelById } from '@/lib/models';
 import { cn } from '@/lib/utils';
 import { computeWordDiff, getSimilarityPercentage, type DiffSegment } from '@/lib/diffUtils';
 import { Badge } from '@/components/ui/badge';
+import { DiffExportMenu } from '@/components/DiffExportMenu';
 import {
   Select,
   SelectContent,
@@ -104,11 +105,12 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
   const [tripleMode, setTripleMode] = useState(false);
   const [syncScroll, setSyncScroll] = useState(true);
 
-  // Refs for scroll synchronization
+  // Refs for scroll synchronization and export
   const leftScrollRef = useRef<HTMLDivElement>(null);
   const middleScrollRef = useRef<HTMLDivElement>(null);
   const rightScrollRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef<boolean>(false);
+  const diffContainerRef = useRef<HTMLDivElement>(null);
 
   const canTripleCompare = validResponses.length >= 3;
 
@@ -202,6 +204,7 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
 
   return (
     <motion.div
+      ref={diffContainerRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
@@ -257,6 +260,7 @@ export function ResponseDiffView({ responses, onClose }: ResponseDiffViewProps) 
             {syncScroll ? <Link2 className="h-3 w-3" /> : <Link2Off className="h-3 w-3" />}
             Sync
           </Button>
+          <DiffExportMenu targetRef={diffContainerRef} />
           <Button
             variant={showDiffHighlight ? "secondary" : "ghost"}
             size="sm"
