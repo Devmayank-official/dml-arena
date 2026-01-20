@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
 import { Sparkles, Users, LogIn, Lock, Crown, History, LayoutDashboard, BarChart3, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { useSidebar } from '@/components/ui/sidebar';
+import { SidebarContext } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { HelpButton } from '@/components/tour/HelpButton';
@@ -24,7 +25,8 @@ export function Header() {
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
   const { canAccessCommunity, isPro, remainingQueries } = useSubscription();
-  const sidebar = useSidebar();
+  // Use context directly to check if sidebar provider exists
+  const sidebarContext = useContext(SidebarContext);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -134,20 +136,22 @@ export function Header() {
             
             <ThemeToggle />
             
-            {/* Desktop Sidebar Toggle */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="hidden md:flex gap-1.5 h-8 sm:h-9 px-2 sm:px-3"
-              onClick={sidebar.toggleSidebar}
-            >
-              {sidebar.open ? (
-                <PanelLeftClose className="h-4 w-4" />
-              ) : (
-                <PanelLeftOpen className="h-4 w-4" />
-              )}
-              <span className="hidden lg:inline">Sidebar</span>
-            </Button>
+            {/* Desktop Sidebar Toggle - Only show when sidebar context is available */}
+            {sidebarContext && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="hidden md:flex gap-1.5 h-8 sm:h-9 px-2 sm:px-3"
+                onClick={sidebarContext.toggleSidebar}
+              >
+                {sidebarContext.open ? (
+                  <PanelLeftClose className="h-4 w-4" />
+                ) : (
+                  <PanelLeftOpen className="h-4 w-4" />
+                )}
+                <span className="hidden lg:inline">Sidebar</span>
+              </Button>
+            )}
             
             <HelpButton onClick={startTour} />
             
