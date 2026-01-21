@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { useApiKeys, ApiKeyConfig } from '@/components/ApiKeysSettings';
 
 interface TokenUsage {
   prompt: number;
@@ -29,6 +30,7 @@ export function useStreamingComparison() {
   const [isLoading, setIsLoading] = useState(false);
   const [streamingModels, setStreamingModels] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { apiKeys, isLoaded } = useApiKeys();
 
   const startComparison = useCallback(async (
     message: string, 
@@ -46,6 +48,11 @@ export function useStreamingComparison() {
     setResponses(new Map());
 
     try {
+      // Pass user API keys if available (they take priority over system keys)
+      const userApiKeys: ApiKeyConfig | undefined = isLoaded && Object.values(apiKeys).some(Boolean) 
+        ? apiKeys 
+        : undefined;
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-ai-stream`,
         {
@@ -54,7 +61,12 @@ export function useStreamingComparison() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ message, models, contextMessages }),
+          body: JSON.stringify({ 
+            message, 
+            models, 
+            contextMessages,
+            userApiKeys, // User keys take priority on the backend
+          }),
           signal: abortControllerRef.current.signal,
         }
       );
@@ -106,7 +118,7 @@ export function useStreamingComparison() {
       setIsLoading(false);
       setStreamingModels([]);
     }
-  }, []);
+  }, [apiKeys, isLoaded]);
 
   const handleEvent = useCallback((event: StreamEvent) => {
     setResponses(prev => {

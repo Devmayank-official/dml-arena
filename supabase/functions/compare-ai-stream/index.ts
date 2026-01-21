@@ -15,6 +15,21 @@ const AVAILABLE_MODELS = [
   'google/gemini-2.5-flash-lite',
 ];
 
+// OpenRouter model mappings
+const OPENROUTER_MODEL_MAP: Record<string, string> = {
+  'openai/gpt-5': 'openai/gpt-4o',
+  'openai/gpt-5-mini': 'openai/gpt-4o-mini',
+  'openai/gpt-5-nano': 'openai/gpt-3.5-turbo',
+  'google/gemini-2.5-pro': 'google/gemini-2.0-flash-001',
+  'google/gemini-3-pro-preview': 'google/gemini-2.5-pro-preview-06-05',
+  'google/gemini-2.5-flash': 'google/gemini-2.5-flash-preview-05-20',
+  'google/gemini-2.5-flash-lite': 'google/gemini-2.0-flash-lite-001',
+  'anthropic/claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
+  'anthropic/claude-3-haiku': 'anthropic/claude-3-haiku',
+  'meta/llama-3.1-70b': 'meta-llama/llama-3.1-70b-instruct',
+  'mistral/mistral-large': 'mistralai/mistral-large-latest',
+};
+
 interface StreamEvent {
   type: 'start' | 'delta' | 'complete' | 'error';
   model: string;
@@ -33,17 +48,97 @@ interface ContextMessage {
   content: string;
 }
 
+interface ApiKeyConfig {
+  openai?: string;
+  anthropic?: string;
+  google?: string;
+  mistral?: string;
+  groq?: string;
+  openrouter?: string;
+}
+
+// Determine which API to use based on available keys
+function getApiConfig(model: string, userKeys?: ApiKeyConfig): { 
+  apiUrl: string; 
+  apiKey: string; 
+  modelId: string;
+  provider: string;
+} {
+  // Priority 1: User's OpenRouter key (can access all models)
+  if (userKeys?.openrouter) {
+    const openRouterModelId = OPENROUTER_MODEL_MAP[model] || model;
+    return {
+      apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
+      apiKey: userKeys.openrouter,
+      modelId: openRouterModelId,
+      provider: 'openrouter',
+    };
+  }
+
+  // Priority 2: User's provider-specific key
+  const provider = model.split('/')[0] as keyof ApiKeyConfig;
+  if (userKeys?.[provider]) {
+    let apiUrl = '';
+    switch (provider) {
+      case 'openai':
+        apiUrl = 'https://api.openai.com/v1/chat/completions';
+        break;
+      case 'anthropic':
+        apiUrl = 'https://api.anthropic.com/v1/messages';
+        break;
+      case 'google':
+        apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+        break;
+      case 'mistral':
+        apiUrl = 'https://api.mistral.ai/v1/chat/completions';
+        break;
+      case 'groq':
+        apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+        break;
+      default:
+        apiUrl = 'https://ai.gateway.lovable.dev/v1/chat/completions';
+    }
+    return {
+      apiUrl,
+      apiKey: userKeys[provider]!,
+      modelId: model,
+      provider,
+    };
+  }
+
+  // Priority 3: System key (Lovable AI Gateway)
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  return {
+    apiUrl: 'https://ai.gateway.lovable.dev/v1/chat/completions',
+    apiKey: LOVABLE_API_KEY || '',
+    modelId: model,
+    provider: 'lovable',
+  };
+}
+
 async function streamModel(
   model: string,
   message: string,
-  apiKey: string,
   sendEvent: (event: StreamEvent) => void,
-  contextMessages: ContextMessage[] = []
+  contextMessages: ContextMessage[] = [],
+  userKeys?: ApiKeyConfig
 ): Promise<void> {
   const startTime = Date.now();
   
   try {
-    console.log(`Starting stream for model: ${model} with ${contextMessages.length} context messages`);
+    const { apiUrl, apiKey, modelId, provider } = getApiConfig(model, userKeys);
+    
+    if (!apiKey) {
+      sendEvent({ 
+        type: 'error', 
+        model, 
+        error: 'No API key configured. Please add your API key in Settings.', 
+        duration: Date.now() - startTime 
+      });
+      return;
+    }
+
+    console.log(`Starting stream for model: ${model} via ${provider} (using ${modelId}) with ${contextMessages.length} context messages`);
     sendEvent({ type: 'start', model });
     
     // Build messages array with context
@@ -53,14 +148,27 @@ async function streamModel(
       { role: "user", content: message },
     ];
     
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Build headers based on provider
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    if (provider === 'openrouter') {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+      headers["HTTP-Referer"] = "https://compareai.app";
+      headers["X-Title"] = "CompareAI";
+    } else if (provider === 'anthropic') {
+      headers["x-api-key"] = apiKey;
+      headers["anthropic-version"] = "2023-06-01";
+    } else {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    }
+
+    const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
-        model,
+        model: modelId,
         messages,
         stream: true,
       }),
@@ -74,7 +182,9 @@ async function streamModel(
       if (response.status === 429) {
         sendEvent({ type: 'error', model, error: 'Rate limit exceeded. Please try again later.', duration });
       } else if (response.status === 402) {
-        sendEvent({ type: 'error', model, error: 'Payment required. Please add credits.', duration });
+        sendEvent({ type: 'error', model, error: 'Payment required. Please add credits or check your API key.', duration });
+      } else if (response.status === 401) {
+        sendEvent({ type: 'error', model, error: 'Invalid API key. Please check your API key in Settings.', duration });
       } else {
         sendEvent({ type: 'error', model, error: `API error: ${response.status}`, duration });
       }
@@ -157,7 +267,7 @@ async function streamModel(
     const estimatedPromptTokens = promptTokens || Math.ceil(message.length / 4);
     const estimatedCompletionTokens = completionTokens || Math.ceil(fullContent.length / 4);
     
-    console.log(`${model} stream complete in ${duration}ms`);
+    console.log(`${model} stream complete in ${duration}ms via ${provider}`);
     sendEvent({
       type: 'complete',
       model,
@@ -187,7 +297,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, models, contextMessages } = await req.json();
+    const { message, models, contextMessages, userApiKeys } = await req.json();
     
     // Validate context messages
     const validContextMessages: ContextMessage[] = Array.isArray(contextMessages) 
@@ -201,9 +311,17 @@ serve(async (req) => {
       );
     }
 
-    const selectedModels = Array.isArray(models) && models.length > 0 
-      ? models.filter((m: string) => AVAILABLE_MODELS.includes(m))
-      : AVAILABLE_MODELS;
+    // Parse user API keys
+    const userKeys: ApiKeyConfig | undefined = userApiKeys && typeof userApiKeys === 'object' 
+      ? userApiKeys 
+      : undefined;
+
+    // Allow all models when user has OpenRouter key, otherwise filter to available models
+    let selectedModels = Array.isArray(models) && models.length > 0 ? models : AVAILABLE_MODELS;
+    
+    if (!userKeys?.openrouter) {
+      selectedModels = selectedModels.filter((m: string) => AVAILABLE_MODELS.includes(m));
+    }
 
     if (selectedModels.length === 0) {
       return new Response(
@@ -213,15 +331,18 @@ serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY && !userKeys?.openrouter && !Object.values(userKeys || {}).some(Boolean)) {
+      console.error("No API keys configured");
       return new Response(
-        JSON.stringify({ error: 'AI service not configured' }),
+        JSON.stringify({ error: 'AI service not configured. Please add your API keys in Settings.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Starting streaming for ${selectedModels.length} models with ${validContextMessages.length} context messages`);
+    const keySource = userKeys?.openrouter ? 'OpenRouter (user)' : 
+                     Object.values(userKeys || {}).some(Boolean) ? 'User API keys' : 
+                     'Lovable AI Gateway';
+    console.log(`Starting streaming for ${selectedModels.length} models via ${keySource} with ${validContextMessages.length} context messages`);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -233,7 +354,7 @@ serve(async (req) => {
         // Stream all models in parallel
         await Promise.all(
           selectedModels.map((model: string) => 
-            streamModel(model, message, LOVABLE_API_KEY, sendEvent, validContextMessages)
+            streamModel(model, message, sendEvent, validContextMessages, userKeys)
           )
         );
 
