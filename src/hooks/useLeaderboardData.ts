@@ -28,7 +28,7 @@ interface Vote {
 export interface ModelStats {
   modelId: string;
   modelName: string;
-  provider: 'openai' | 'google';
+  provider: string;
   color: string;
   totalResponses: number;
   avgResponseTime: number;
