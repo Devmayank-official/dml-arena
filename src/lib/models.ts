@@ -1,4 +1,4 @@
-export type ModelProvider = 'openai' | 'google' | 'anthropic' | 'meta' | 'mistral' | 'openrouter';
+export type ModelProvider = 'openai' | 'google' | 'anthropic' | 'meta' | 'mistral' | 'deepseek' | 'qwen' | 'xai' | 'zhipu' | 'moonshot';
 
 export interface AIModel {
   id: string;
@@ -6,25 +6,44 @@ export interface AIModel {
   provider: ModelProvider;
   description: string;
   color: string;
-  openRouterId?: string; // OpenRouter model ID mapping
+  openRouterId: string;
+  requiresOpenRouter?: boolean;
 }
 
+// Base models available with system keys (OpenAI and Google)
 export const AI_MODELS: AIModel[] = [
+  // OpenAI Models
   {
     id: 'openai/gpt-5',
     name: 'GPT-5',
     provider: 'openai',
     description: 'Most powerful OpenAI model with exceptional reasoning',
     color: 'hsl(142 76% 45%)',
-    openRouterId: 'openai/gpt-4o',
+    openRouterId: 'openai/gpt-5',
+  },
+  {
+    id: 'openai/gpt-5.1',
+    name: 'GPT-5.1',
+    provider: 'openai',
+    description: 'Enhanced GPT-5 with improved capabilities',
+    color: 'hsl(142 76% 50%)',
+    openRouterId: 'openai/gpt-5.1',
+  },
+  {
+    id: 'openai/gpt-5.2',
+    name: 'GPT-5.2',
+    provider: 'openai',
+    description: 'Latest GPT with advanced reasoning',
+    color: 'hsl(142 76% 55%)',
+    openRouterId: 'openai/gpt-5.2',
   },
   {
     id: 'openai/gpt-5-mini',
     name: 'GPT-5 Mini',
     provider: 'openai',
     description: 'Fast and efficient with strong reasoning',
-    color: 'hsl(142 76% 55%)',
-    openRouterId: 'openai/gpt-4o-mini',
+    color: 'hsl(142 76% 60%)',
+    openRouterId: 'openai/gpt-5-mini',
   },
   {
     id: 'openai/gpt-5-nano',
@@ -32,15 +51,16 @@ export const AI_MODELS: AIModel[] = [
     provider: 'openai',
     description: 'Fastest OpenAI model for simple tasks',
     color: 'hsl(142 76% 65%)',
-    openRouterId: 'openai/gpt-3.5-turbo',
+    openRouterId: 'openai/gpt-5-nano',
   },
+  // Google Models
   {
     id: 'google/gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
     provider: 'google',
     description: 'Top-tier Gemini with complex reasoning',
     color: 'hsl(217 91% 60%)',
-    openRouterId: 'google/gemini-2.0-flash-001',
+    openRouterId: 'google/gemini-2.5-pro',
   },
   {
     id: 'google/gemini-3-pro-preview',
@@ -48,7 +68,7 @@ export const AI_MODELS: AIModel[] = [
     provider: 'google',
     description: 'Next-generation Gemini model',
     color: 'hsl(217 91% 50%)',
-    openRouterId: 'google/gemini-2.5-pro-preview-06-05',
+    openRouterId: 'google/gemini-3-pro-preview',
   },
   {
     id: 'google/gemini-2.5-flash',
@@ -56,7 +76,7 @@ export const AI_MODELS: AIModel[] = [
     provider: 'google',
     description: 'Balanced speed and intelligence',
     color: 'hsl(217 91% 70%)',
-    openRouterId: 'google/gemini-2.5-flash-preview-05-20',
+    openRouterId: 'google/gemini-2.5-flash',
   },
   {
     id: 'google/gemini-2.5-flash-lite',
@@ -64,45 +84,280 @@ export const AI_MODELS: AIModel[] = [
     provider: 'google',
     description: 'Fastest Gemini for quick tasks',
     color: 'hsl(217 91% 80%)',
-    openRouterId: 'google/gemini-2.0-flash-lite-001',
+    openRouterId: 'google/gemini-2.5-flash-lite',
   },
 ];
 
-// OpenRouter additional models that can be accessed with OpenRouter key
+// OpenRouter additional models - requires OpenRouter API key
 export const OPENROUTER_MODELS: AIModel[] = [
+  // Anthropic Claude Models
   {
-    id: 'anthropic/claude-3.5-sonnet',
-    name: 'Claude 3.5 Sonnet',
+    id: 'anthropic/claude-sonnet-4.5',
+    name: 'Claude Sonnet 4.5',
     provider: 'anthropic',
-    description: 'Most capable Anthropic model',
+    description: 'Latest Claude with exceptional reasoning and coding',
     color: 'hsl(24 94% 50%)',
-    openRouterId: 'anthropic/claude-3.5-sonnet',
+    openRouterId: 'anthropic/claude-sonnet-4.5',
+    requiresOpenRouter: true,
   },
   {
-    id: 'anthropic/claude-3-haiku',
-    name: 'Claude 3 Haiku',
+    id: 'anthropic/claude-opus-4.5',
+    name: 'Claude Opus 4.5',
+    provider: 'anthropic',
+    description: 'Most powerful Claude for complex tasks',
+    color: 'hsl(24 94% 45%)',
+    openRouterId: 'anthropic/claude-opus-4.5',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'anthropic/claude-opus-4',
+    name: 'Claude Opus 4',
+    provider: 'anthropic',
+    description: 'Advanced Claude with deep reasoning',
+    color: 'hsl(24 94% 55%)',
+    openRouterId: 'anthropic/claude-opus-4',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'anthropic/claude-haiku-4.5',
+    name: 'Claude Haiku 4.5',
     provider: 'anthropic',
     description: 'Fast and affordable Claude model',
-    color: 'hsl(24 94% 60%)',
-    openRouterId: 'anthropic/claude-3-haiku',
+    color: 'hsl(24 94% 65%)',
+    openRouterId: 'anthropic/claude-haiku-4.5',
+    requiresOpenRouter: true,
+  },
+  // DeepSeek Models
+  {
+    id: 'deepseek/deepseek-r1',
+    name: 'DeepSeek R1',
+    provider: 'deepseek',
+    description: 'Advanced reasoning model with chain-of-thought',
+    color: 'hsl(200 95% 50%)',
+    openRouterId: 'deepseek/deepseek-r1:free',
+    requiresOpenRouter: true,
   },
   {
-    id: 'meta/llama-3.1-70b',
-    name: 'Llama 3.1 70B',
-    provider: 'meta',
-    description: 'Powerful open-source model from Meta',
-    color: 'hsl(214 100% 50%)',
-    openRouterId: 'meta-llama/llama-3.1-70b-instruct',
+    id: 'deepseek/deepseek-v3.1',
+    name: 'DeepSeek V3.1',
+    provider: 'deepseek',
+    description: 'Latest DeepSeek with enhanced capabilities',
+    color: 'hsl(200 95% 55%)',
+    openRouterId: 'deepseek/deepseek-chat-v3.1',
+    requiresOpenRouter: true,
   },
   {
-    id: 'mistral/mistral-large',
-    name: 'Mistral Large',
+    id: 'deepseek/deepseek-r1-distill-70b',
+    name: 'DeepSeek R1 70B',
+    provider: 'deepseek',
+    description: 'Distilled R1 with Llama architecture',
+    color: 'hsl(200 95% 60%)',
+    openRouterId: 'deepseek/deepseek-r1-distill-llama-70b',
+    requiresOpenRouter: true,
+  },
+  // Qwen Models
+  {
+    id: 'qwen/qwen3-coder',
+    name: 'Qwen 3 Coder',
+    provider: 'qwen',
+    description: 'Specialized coding model from Alibaba',
+    color: 'hsl(270 70% 55%)',
+    openRouterId: 'qwen/qwen3-coder',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'qwen/qwen3-max',
+    name: 'Qwen 3 Max',
+    provider: 'qwen',
+    description: 'Most powerful Qwen model',
+    color: 'hsl(270 70% 50%)',
+    openRouterId: 'qwen/qwen3-max',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'qwen/qwen3-235b',
+    name: 'Qwen 3 235B',
+    provider: 'qwen',
+    description: 'Massive 235B parameter model',
+    color: 'hsl(270 70% 45%)',
+    openRouterId: 'qwen/qwen3-235b-a22b-07-25',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'qwen/qwen3-thinking',
+    name: 'Qwen 3 Thinking',
+    provider: 'qwen',
+    description: 'Enhanced reasoning with thinking mode',
+    color: 'hsl(270 70% 60%)',
+    openRouterId: 'qwen/qwen3-235b-a22b-thinking-2507',
+    requiresOpenRouter: true,
+  },
+  // Grok Models (xAI)
+  {
+    id: 'xai/grok-4',
+    name: 'Grok 4',
+    provider: 'xai',
+    description: 'Latest Grok with superior reasoning',
+    color: 'hsl(0 0% 30%)',
+    openRouterId: 'x-ai/grok-4',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'xai/grok-4-fast',
+    name: 'Grok 4 Fast',
+    provider: 'xai',
+    description: 'Optimized Grok for speed',
+    color: 'hsl(0 0% 40%)',
+    openRouterId: 'x-ai/grok-4-fast',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'xai/grok-3',
+    name: 'Grok 3',
+    provider: 'xai',
+    description: 'Powerful reasoning from xAI',
+    color: 'hsl(0 0% 50%)',
+    openRouterId: 'x-ai/grok-3',
+    requiresOpenRouter: true,
+  },
+  // GLM Models (Zhipu)
+  {
+    id: 'zhipu/glm-4.6',
+    name: 'GLM 4.6',
+    provider: 'zhipu',
+    description: 'Latest GLM with advanced capabilities',
+    color: 'hsl(160 70% 45%)',
+    openRouterId: 'z-ai/glm-4.6',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'zhipu/glm-4.5',
+    name: 'GLM 4.5',
+    provider: 'zhipu',
+    description: 'Powerful Chinese-English bilingual model',
+    color: 'hsl(160 70% 50%)',
+    openRouterId: 'z-ai/glm-4.5',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'zhipu/glm-4.5-air',
+    name: 'GLM 4.5 Air',
+    provider: 'zhipu',
+    description: 'Fast and efficient GLM variant',
+    color: 'hsl(160 70% 60%)',
+    openRouterId: 'z-ai/glm-4.5-air',
+    requiresOpenRouter: true,
+  },
+  // Mistral Models
+  {
+    id: 'mistral/mistral-medium-3.1',
+    name: 'Mistral Medium 3.1',
     provider: 'mistral',
-    description: 'Most capable Mistral model',
-    color: 'hsl(270 91% 60%)',
-    openRouterId: 'mistralai/mistral-large-latest',
+    description: 'Balanced Mistral for general tasks',
+    color: 'hsl(35 95% 55%)',
+    openRouterId: 'mistralai/mistral-medium-3.1',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'mistral/codestral-2508',
+    name: 'Codestral',
+    provider: 'mistral',
+    description: 'Specialized coding model from Mistral',
+    color: 'hsl(35 95% 50%)',
+    openRouterId: 'mistralai/codestral-2508',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'mistral/devstral-medium',
+    name: 'Devstral Medium',
+    provider: 'mistral',
+    description: 'Development-focused Mistral model',
+    color: 'hsl(35 95% 60%)',
+    openRouterId: 'mistralai/devstral-medium-2507',
+    requiresOpenRouter: true,
+  },
+  // Meta Llama Models
+  {
+    id: 'meta/llama-4-scout',
+    name: 'Llama 4 Scout',
+    provider: 'meta',
+    description: 'Latest Llama with enhanced reasoning',
+    color: 'hsl(214 100% 50%)',
+    openRouterId: 'meta-llama/llama-4-scout:free',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'meta/llama-3.3-70b',
+    name: 'Llama 3.3 70B',
+    provider: 'meta',
+    description: 'Powerful open-source 70B model',
+    color: 'hsl(214 100% 55%)',
+    openRouterId: 'meta-llama/llama-3.3-70b-instruct:free',
+    requiresOpenRouter: true,
+  },
+  // Kimi/Moonshot Models
+  {
+    id: 'moonshot/kimi-k2',
+    name: 'Kimi K2',
+    provider: 'moonshot',
+    description: 'Advanced reasoning model from Moonshot',
+    color: 'hsl(280 70% 55%)',
+    openRouterId: 'moonshotai/kimi-k2',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'moonshot/kimi-k2-thinking',
+    name: 'Kimi K2 Thinking',
+    provider: 'moonshot',
+    description: 'Enhanced chain-of-thought reasoning',
+    color: 'hsl(280 70% 50%)',
+    openRouterId: 'moonshotai/kimi-k2-thinking',
+    requiresOpenRouter: true,
+  },
+  // OpenAI OSS Models
+  {
+    id: 'openai/gpt-oss-120b',
+    name: 'GPT-OSS 120B',
+    provider: 'openai',
+    description: 'Open-source GPT variant 120B',
+    color: 'hsl(142 76% 40%)',
+    openRouterId: 'openai/gpt-oss-120b',
+    requiresOpenRouter: true,
+  },
+  {
+    id: 'openai/gpt-oss-20b',
+    name: 'GPT-OSS 20B',
+    provider: 'openai',
+    description: 'Efficient open-source GPT 20B',
+    color: 'hsl(142 76% 48%)',
+    openRouterId: 'openai/gpt-oss-20b',
+    requiresOpenRouter: true,
+  },
+  // MiniMax Models
+  {
+    id: 'minimax/minimax-m2',
+    name: 'MiniMax M2',
+    provider: 'zhipu',
+    description: 'Latest MiniMax with enhanced capabilities',
+    color: 'hsl(320 70% 55%)',
+    openRouterId: 'minimax/minimax-m2',
+    requiresOpenRouter: true,
   },
 ];
+
+// Provider display names and colors
+export const PROVIDER_INFO: Record<ModelProvider, { name: string; color: string }> = {
+  openai: { name: 'OpenAI', color: 'bg-green-500' },
+  google: { name: 'Google', color: 'bg-blue-500' },
+  anthropic: { name: 'Anthropic', color: 'bg-orange-500' },
+  meta: { name: 'Meta', color: 'bg-indigo-500' },
+  mistral: { name: 'Mistral', color: 'bg-amber-500' },
+  deepseek: { name: 'DeepSeek', color: 'bg-cyan-500' },
+  qwen: { name: 'Qwen', color: 'bg-purple-500' },
+  xai: { name: 'xAI', color: 'bg-gray-500' },
+  zhipu: { name: 'Zhipu', color: 'bg-teal-500' },
+  moonshot: { name: 'Moonshot', color: 'bg-violet-500' },
+};
 
 export const getModelById = (id: string): AIModel | undefined => {
   return [...AI_MODELS, ...OPENROUTER_MODELS].find(model => model.id === id);
@@ -117,4 +372,12 @@ export const getAllModels = (hasOpenRouterKey: boolean = false): AIModel[] => {
     return [...AI_MODELS, ...OPENROUTER_MODELS];
   }
   return AI_MODELS;
+};
+
+export const getProviderColor = (provider: ModelProvider): string => {
+  return PROVIDER_INFO[provider]?.color || 'bg-gray-500';
+};
+
+export const getProviderName = (provider: ModelProvider): string => {
+  return PROVIDER_INFO[provider]?.name || provider;
 };

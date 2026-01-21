@@ -7,13 +7,14 @@ interface TokenUsage {
   total: number;
 }
 
-interface StreamingResponse {
+export interface StreamingResponse {
   model: string;
   response: string;
   error?: string;
   duration: number;
   tokens?: TokenUsage;
   isStreaming: boolean;
+  apiKeySource?: 'user' | 'system';
 }
 
 interface StreamEvent {
@@ -23,6 +24,7 @@ interface StreamEvent {
   duration?: number;
   tokens?: TokenUsage;
   error?: string;
+  apiKeySource?: 'user' | 'system';
 }
 
 export function useStreamingComparison() {
@@ -154,6 +156,7 @@ export function useStreamingComparison() {
             duration: event.duration || 0,
             tokens: event.tokens,
             isStreaming: false,
+            apiKeySource: event.apiKeySource,
           });
           // Remove from streaming models
           setStreamingModels(prev => prev.filter(m => m !== event.model));

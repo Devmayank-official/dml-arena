@@ -1,11 +1,12 @@
-import { Copy, Check, Clock, AlertCircle, Zap, RefreshCw, Pin, PinOff } from 'lucide-react';
+import { Copy, Check, Clock, AlertCircle, Zap, RefreshCw, Pin, PinOff, Key, Server } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { VotingButtons } from '@/components/VotingButtons';
 import { QualityRating } from '@/components/QualityRating';
 import { MarkdownContent } from '@/components/MarkdownContent';
-import { getModelById } from '@/lib/models';
+import { getModelById, getProviderColor, getProviderName } from '@/lib/models';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
@@ -38,6 +39,7 @@ interface ResponseCardProps {
   onPin?: () => void;
   onUnpin?: () => void;
   showPinning?: boolean;
+  apiKeySource?: 'user' | 'system' | null;
 }
 
 export function ResponseCard({ 
@@ -58,7 +60,8 @@ export function ResponseCard({
   isPinned = false,
   onPin,
   onUnpin,
-  showPinning = false
+  showPinning = false,
+  apiKeySource = null
 }: ResponseCardProps) {
   const [copied, setCopied] = useState(false);
   const model = getModelById(modelId);
@@ -71,7 +74,7 @@ export function ResponseCard({
     }
   };
 
-  const providerColor = model?.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500';
+  const providerColor = model ? getProviderColor(model.provider) : 'bg-gray-500';
 
   // Calculate tokens per second for speed metric
   const tokensPerSecond = tokens?.completion && duration > 0 
@@ -94,11 +97,48 @@ export function ResponseCard({
             isStreaming && "animate-pulse"
           )} />
           <span className="font-medium text-sm">{model?.name || modelId}</span>
+          {model && (
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {getProviderName(model.provider)}
+            </span>
+          )}
           {isStreaming && (
             <span className="text-xs text-primary animate-pulse">streaming...</span>
           )}
+          {/* API Key Source Indicator */}
+          {apiKeySource && !isLoading && !isStreaming && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge 
+                    variant={apiKeySource === 'user' ? 'default' : 'secondary'} 
+                    className={cn(
+                      "text-[10px] px-1.5 py-0 gap-1 cursor-help",
+                      apiKeySource === 'user' 
+                        ? "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30" 
+                        : "bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                    )}
+                  >
+                    {apiKeySource === 'user' ? (
+                      <Key className="h-2.5 w-2.5" />
+                    ) : (
+                      <Server className="h-2.5 w-2.5" />
+                    )}
+                    {apiKeySource === 'user' ? 'Your Key' : 'System'}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {apiKeySource === 'user' 
+                      ? 'Using your personal API key' 
+                      : 'Using system API key'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {!isLoading && !isStreaming && !error && (
             <>
               <TooltipProvider>
@@ -106,7 +146,8 @@ export function ResponseCard({
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
                       <Clock className="h-3 w-3" />
-                      <span>{(duration / 1000).toFixed(2)}s</span>
+                      <span className="hidden xs:inline">{(duration / 1000).toFixed(2)}s</span>
+                      <span className="xs:hidden">{(duration / 1000).toFixed(1)}s</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -121,7 +162,8 @@ export function ResponseCard({
                     <TooltipTrigger asChild>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help px-1.5 py-0.5 rounded bg-secondary/50">
                         <Zap className="h-3 w-3" />
-                        <span>{tokens.total.toLocaleString()}</span>
+                        <span className="hidden sm:inline">{tokens.total.toLocaleString()}</span>
+                        <span className="sm:hidden">{Math.round(tokens.total / 1000)}k</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -141,11 +183,13 @@ export function ResponseCard({
               )}
               
               {showRating && onRate && (
-                <QualityRating
-                  rating={currentRating ?? null}
-                  onRate={onRate}
-                  disabled={isLoading || isStreaming}
-                />
+                <div className="hidden sm:block">
+                  <QualityRating
+                    rating={currentRating ?? null}
+                    onRate={onRate}
+                    disabled={isLoading || isStreaming}
+                  />
+                </div>
               )}
               
               {showVoting && onVote && (

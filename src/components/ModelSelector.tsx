@@ -1,7 +1,7 @@
-import { AI_MODELS, AIModel } from '@/lib/models';
+import { AI_MODELS, OPENROUTER_MODELS, AIModel, getAllModels, getProviderColor, getProviderName, ModelProvider, PROVIDER_INFO } from '@/lib/models';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronUp, Check, Info, Lock } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronDown, ChevronUp, Check, Info, Lock, Key } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,10 +36,45 @@ export function ModelSelector({
   const [isOpen, setIsOpen] = useState(false);
   const { canUseModel, isPro } = useSubscription();
   
-  const openaiModels = AI_MODELS.filter(m => m.provider === 'openai');
-  const googleModels = AI_MODELS.filter(m => m.provider === 'google');
+  // Check if OpenRouter key is configured
+  const hasOpenRouterKey = useMemo(() => {
+    const keys = localStorage.getItem('apiKeys');
+    if (keys) {
+      try {
+        const parsed = JSON.parse(keys);
+        return !!parsed.openrouter;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }, []);
 
-  const selectedNames = AI_MODELS
+  const allAvailableModels = useMemo(() => getAllModels(hasOpenRouterKey), [hasOpenRouterKey]);
+
+  // Group models by provider
+  const modelsByProvider = useMemo(() => {
+    const groups: Record<ModelProvider, AIModel[]> = {
+      openai: [],
+      google: [],
+      anthropic: [],
+      meta: [],
+      mistral: [],
+      deepseek: [],
+      qwen: [],
+      xai: [],
+      zhipu: [],
+      moonshot: [],
+    };
+    
+    allAvailableModels.forEach(model => {
+      groups[model.provider].push(model);
+    });
+    
+    return groups;
+  }, [allAvailableModels]);
+
+  const selectedNames = allAvailableModels
     .filter(m => selectedModels.includes(m.id))
     .map(m => m.name);
 
@@ -47,7 +82,6 @@ export function ModelSelector({
     if (isPro) {
       onSelectAll();
     } else {
-      // Only select free models
       FREE_PLAN_LIMITS.allowedModels.forEach(modelId => {
         if (!selectedModels.includes(modelId)) {
           onToggleModel(modelId);
@@ -55,6 +89,8 @@ export function ModelSelector({
       });
     }
   };
+
+  const totalModels = isPro ? allAvailableModels.length : FREE_PLAN_LIMITS.allowedModels.length;
 
   return (
     <div className="space-y-2">
@@ -66,6 +102,12 @@ export function ModelSelector({
               Free: 2 models only
             </Badge>
           )}
+          {hasOpenRouterKey && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <Key className="h-2.5 w-2.5" />
+              OpenRouter
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {onSetModels && (
@@ -75,7 +117,7 @@ export function ModelSelector({
             />
           )}
           <span className="text-xs text-muted-foreground">
-            {selectedModels.length} of {isPro ? AI_MODELS.length : FREE_PLAN_LIMITS.allowedModels.length}
+            {selectedModels.length} of {totalModels}
           </span>
         </div>
       </div>
@@ -89,7 +131,7 @@ export function ModelSelector({
             <div className="flex flex-wrap gap-1 flex-1 text-left">
               {selectedModels.length === 0 ? (
                 <span className="text-muted-foreground">Select AI models...</span>
-              ) : selectedModels.length === AI_MODELS.length ? (
+              ) : selectedModels.length === allAvailableModels.length ? (
                 <span className="text-foreground">All models selected</span>
               ) : (
                 selectedNames.slice(0, 3).map((name, i) => (
@@ -137,39 +179,48 @@ export function ModelSelector({
           </div>
 
           <div className="max-h-[400px] overflow-y-auto p-2 space-y-3">
-            {/* OpenAI Models */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 px-2 py-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">OpenAI</span>
-              </div>
-              {openaiModels.map((model) => (
-                <DropdownModelItem
-                  key={model.id}
-                  model={model}
-                  isSelected={selectedModels.includes(model.id)}
-                  onToggle={() => onToggleModel(model.id)}
-                  isLocked={!canUseModel(model.id)}
-                />
-              ))}
-            </div>
+            {/* Render each provider group */}
+            {(Object.keys(PROVIDER_INFO) as ModelProvider[]).map((provider) => {
+              const models = modelsByProvider[provider];
+              if (models.length === 0) return null;
+              
+              return (
+                <div key={provider} className="space-y-1">
+                  <div className="flex items-center gap-2 px-2 py-1.5">
+                    <div className={cn("w-2 h-2 rounded-full", getProviderColor(provider))} />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {getProviderName(provider)}
+                    </span>
+                    {models[0]?.requiresOpenRouter && (
+                      <Badge variant="outline" className="text-[9px] px-1 py-0">
+                        OpenRouter
+                      </Badge>
+                    )}
+                  </div>
+                  {models.map((model) => (
+                    <DropdownModelItem
+                      key={model.id}
+                      model={model}
+                      isSelected={selectedModels.includes(model.id)}
+                      onToggle={() => onToggleModel(model.id)}
+                      isLocked={!canUseModel(model.id)}
+                    />
+                  ))}
+                </div>
+              );
+            })}
 
-            {/* Google Models */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 px-2 py-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Google</span>
+            {/* Show OpenRouter prompt if not configured */}
+            {!hasOpenRouterKey && (
+              <div className="px-3 py-4 bg-secondary/30 rounded-lg border border-dashed border-border">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Key className="h-4 w-4" />
+                  <span className="text-xs">
+                    Add your OpenRouter API key in Settings to unlock 20+ more models including Claude, DeepSeek, Grok, and more.
+                  </span>
+                </div>
               </div>
-              {googleModels.map((model) => (
-                <DropdownModelItem
-                  key={model.id}
-                  model={model}
-                  isSelected={selectedModels.includes(model.id)}
-                  onToggle={() => onToggleModel(model.id)}
-                  isLocked={!canUseModel(model.id)}
-                />
-              ))}
-            </div>
+            )}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -185,7 +236,7 @@ interface DropdownModelItemProps {
 }
 
 function DropdownModelItem({ model, isSelected, onToggle, isLocked }: DropdownModelItemProps) {
-  const providerColor = model.provider === 'openai' ? 'bg-green-500' : 'bg-blue-500';
+  const providerColor = getProviderColor(model.provider);
   
   return (
     <div className="flex items-center gap-2">
@@ -237,11 +288,16 @@ function DropdownModelItem({ model, isSelected, onToggle, isLocked }: DropdownMo
               </div>
               <p className="text-xs">{model.description}</p>
               <p className="text-xs text-muted-foreground">
-                Provider: {model.provider === 'openai' ? 'OpenAI' : 'Google'}
+                Provider: {getProviderName(model.provider)}
               </p>
               <p className="text-xs text-muted-foreground">
-                ID: {model.id}
+                ID: {model.openRouterId}
               </p>
+              {model.requiresOpenRouter && (
+                <p className="text-xs text-amber-500">
+                  Requires OpenRouter API key
+                </p>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>
