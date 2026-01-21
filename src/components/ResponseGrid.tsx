@@ -18,6 +18,7 @@ interface ModelResponse {
   duration: number;
   tokens?: TokenUsage;
   isStreaming?: boolean;
+  apiKeySource?: 'user' | 'system';
 }
 
 interface ResponseGridProps {
@@ -122,6 +123,7 @@ export function ResponseGrid({
               showRating={showRating && !!historyId && !response.error && !response.isStreaming}
               currentRating={getRating ? getRating(response.model) : null}
               onRate={onRate ? (rating) => onRate(response.model, rating) : undefined}
+              apiKeySource={response.apiKeySource}
             />
           ))}
         </div>

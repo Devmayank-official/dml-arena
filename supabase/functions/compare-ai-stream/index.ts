@@ -7,6 +7,8 @@ const corsHeaders = {
 
 const AVAILABLE_MODELS = [
   'openai/gpt-5',
+  'openai/gpt-5.1',
+  'openai/gpt-5.2',
   'openai/gpt-5-mini',
   'openai/gpt-5-nano',
   'google/gemini-2.5-pro',
@@ -15,19 +17,55 @@ const AVAILABLE_MODELS = [
   'google/gemini-2.5-flash-lite',
 ];
 
-// OpenRouter model mappings
+// OpenRouter model mappings - maps internal IDs to OpenRouter model IDs
 const OPENROUTER_MODEL_MAP: Record<string, string> = {
-  'openai/gpt-5': 'openai/gpt-4o',
-  'openai/gpt-5-mini': 'openai/gpt-4o-mini',
-  'openai/gpt-5-nano': 'openai/gpt-3.5-turbo',
-  'google/gemini-2.5-pro': 'google/gemini-2.0-flash-001',
-  'google/gemini-3-pro-preview': 'google/gemini-2.5-pro-preview-06-05',
-  'google/gemini-2.5-flash': 'google/gemini-2.5-flash-preview-05-20',
-  'google/gemini-2.5-flash-lite': 'google/gemini-2.0-flash-lite-001',
-  'anthropic/claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
-  'anthropic/claude-3-haiku': 'anthropic/claude-3-haiku',
-  'meta/llama-3.1-70b': 'meta-llama/llama-3.1-70b-instruct',
-  'mistral/mistral-large': 'mistralai/mistral-large-latest',
+  // OpenAI models
+  'openai/gpt-5': 'openai/gpt-5',
+  'openai/gpt-5.1': 'openai/gpt-5.1',
+  'openai/gpt-5.2': 'openai/gpt-5.2',
+  'openai/gpt-5-mini': 'openai/gpt-5-mini',
+  'openai/gpt-5-nano': 'openai/gpt-5-nano',
+  'openai/gpt-oss-120b': 'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b': 'openai/gpt-oss-20b',
+  // Google models
+  'google/gemini-2.5-pro': 'google/gemini-2.5-pro',
+  'google/gemini-3-pro-preview': 'google/gemini-3-pro-preview',
+  'google/gemini-2.5-flash': 'google/gemini-2.5-flash',
+  'google/gemini-2.5-flash-lite': 'google/gemini-2.5-flash-lite',
+  // Anthropic models
+  'anthropic/claude-sonnet-4.5': 'anthropic/claude-sonnet-4.5',
+  'anthropic/claude-opus-4.5': 'anthropic/claude-opus-4.5',
+  'anthropic/claude-opus-4': 'anthropic/claude-opus-4',
+  'anthropic/claude-haiku-4.5': 'anthropic/claude-haiku-4.5',
+  // DeepSeek models
+  'deepseek/deepseek-r1': 'deepseek/deepseek-r1:free',
+  'deepseek/deepseek-v3.1': 'deepseek/deepseek-chat-v3.1',
+  'deepseek/deepseek-r1-distill-70b': 'deepseek/deepseek-r1-distill-llama-70b',
+  // Qwen models
+  'qwen/qwen3-coder': 'qwen/qwen3-coder',
+  'qwen/qwen3-max': 'qwen/qwen3-max',
+  'qwen/qwen3-235b': 'qwen/qwen3-235b-a22b-07-25',
+  'qwen/qwen3-thinking': 'qwen/qwen3-235b-a22b-thinking-2507',
+  // xAI Grok models
+  'xai/grok-4': 'x-ai/grok-4',
+  'xai/grok-4-fast': 'x-ai/grok-4-fast',
+  'xai/grok-3': 'x-ai/grok-3',
+  // Zhipu GLM models
+  'zhipu/glm-4.6': 'z-ai/glm-4.6',
+  'zhipu/glm-4.5': 'z-ai/glm-4.5',
+  'zhipu/glm-4.5-air': 'z-ai/glm-4.5-air',
+  // Mistral models
+  'mistral/mistral-medium-3.1': 'mistralai/mistral-medium-3.1',
+  'mistral/codestral-2508': 'mistralai/codestral-2508',
+  'mistral/devstral-medium': 'mistralai/devstral-medium-2507',
+  // Meta Llama models
+  'meta/llama-4-scout': 'meta-llama/llama-4-scout:free',
+  'meta/llama-3.3-70b': 'meta-llama/llama-3.3-70b-instruct:free',
+  // Moonshot Kimi models
+  'moonshot/kimi-k2': 'moonshotai/kimi-k2',
+  'moonshot/kimi-k2-thinking': 'moonshotai/kimi-k2-thinking',
+  // MiniMax models
+  'minimax/minimax-m2': 'minimax/minimax-m2',
 };
 
 interface StreamEvent {
@@ -41,6 +79,7 @@ interface StreamEvent {
     total: number;
   };
   error?: string;
+  apiKeySource?: 'user' | 'system';
 }
 
 interface ContextMessage {
@@ -63,6 +102,7 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
   apiKey: string; 
   modelId: string;
   provider: string;
+  isUserKey: boolean;
 } {
   // Priority 1: User's OpenRouter key (can access all models)
   if (userKeys?.openrouter) {
@@ -72,6 +112,7 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
       apiKey: userKeys.openrouter,
       modelId: openRouterModelId,
       provider: 'openrouter',
+      isUserKey: true,
     };
   }
 
@@ -103,6 +144,7 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
       apiKey: userKeys[provider]!,
       modelId: model,
       provider,
+      isUserKey: true,
     };
   }
 
@@ -113,6 +155,7 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
     apiKey: LOVABLE_API_KEY || '',
     modelId: model,
     provider: 'lovable',
+    isUserKey: false,
   };
 }
 
@@ -124,9 +167,12 @@ async function streamModel(
   userKeys?: ApiKeyConfig
 ): Promise<void> {
   const startTime = Date.now();
+  let isUserKey = false;
   
   try {
-    const { apiUrl, apiKey, modelId, provider } = getApiConfig(model, userKeys);
+    const config = getApiConfig(model, userKeys);
+    const { apiUrl, apiKey, modelId, provider } = config;
+    isUserKey = config.isUserKey;
     
     if (!apiKey) {
       sendEvent({ 
@@ -267,7 +313,7 @@ async function streamModel(
     const estimatedPromptTokens = promptTokens || Math.ceil(message.length / 4);
     const estimatedCompletionTokens = completionTokens || Math.ceil(fullContent.length / 4);
     
-    console.log(`${model} stream complete in ${duration}ms via ${provider}`);
+    console.log(`${model} stream complete in ${duration}ms via ${provider} (${isUserKey ? 'user key' : 'system key'})`);
     sendEvent({
       type: 'complete',
       model,
@@ -278,6 +324,7 @@ async function streamModel(
         completion: estimatedCompletionTokens,
         total: estimatedPromptTokens + estimatedCompletionTokens,
       },
+      apiKeySource: isUserKey ? 'user' : 'system',
     });
   } catch (error) {
     const duration = Date.now() - startTime;
