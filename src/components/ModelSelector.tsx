@@ -113,6 +113,10 @@ export function ModelSelector({
       xai: [],
       zhipu: [],
       moonshot: [],
+      cohere: [],
+      nvidia: [],
+      ai21: [],
+      amazon: [],
     };
     
     filteredModels.forEach(model => {
