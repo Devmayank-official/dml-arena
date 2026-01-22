@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const AVAILABLE_MODELS = [
+// Models available with system keys (Lovable AI Gateway supports these)
+const SYSTEM_AVAILABLE_MODELS = [
   'openai/gpt-5',
   'openai/gpt-5.1',
   'openai/gpt-5.2',
@@ -25,8 +26,13 @@ const OPENROUTER_MODEL_MAP: Record<string, string> = {
   'openai/gpt-5.2': 'openai/gpt-5.2',
   'openai/gpt-5-mini': 'openai/gpt-5-mini',
   'openai/gpt-5-nano': 'openai/gpt-5-nano',
+  'openai/gpt-oss-200b': 'openai/gpt-oss-200b',
   'openai/gpt-oss-120b': 'openai/gpt-oss-120b',
   'openai/gpt-oss-20b': 'openai/gpt-oss-20b',
+  'openai/o1': 'openai/o1',
+  'openai/o1-pro': 'openai/o1-pro',
+  'openai/o3-mini': 'openai/o3-mini',
+  'openai/gpt-4.1': 'openai/gpt-4.1',
   // Google models
   'google/gemini-2.5-pro': 'google/gemini-2.5-pro',
   'google/gemini-3-pro-preview': 'google/gemini-3-pro-preview',
@@ -37,35 +43,60 @@ const OPENROUTER_MODEL_MAP: Record<string, string> = {
   'anthropic/claude-opus-4.5': 'anthropic/claude-opus-4.5',
   'anthropic/claude-opus-4': 'anthropic/claude-opus-4',
   'anthropic/claude-haiku-4.5': 'anthropic/claude-haiku-4.5',
+  'anthropic/claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
+  'anthropic/claude-3-opus': 'anthropic/claude-3-opus',
   // DeepSeek models
   'deepseek/deepseek-r1': 'deepseek/deepseek-r1:free',
-  'deepseek/deepseek-v3.1': 'deepseek/deepseek-chat-v3.1',
+  'deepseek/deepseek-r1-0528': 'deepseek/deepseek-r1-0528:free',
+  'deepseek/deepseek-v3.1': 'deepseek/deepseek-chat-v3-0324',
+  'deepseek/deepseek-v3': 'deepseek/deepseek-chat',
   'deepseek/deepseek-r1-distill-70b': 'deepseek/deepseek-r1-distill-llama-70b',
+  'deepseek/deepseek-prover-v2': 'deepseek/deepseek-prover-v2:free',
   // Qwen models
   'qwen/qwen3-coder': 'qwen/qwen3-coder',
   'qwen/qwen3-max': 'qwen/qwen3-max',
-  'qwen/qwen3-235b': 'qwen/qwen3-235b-a22b-07-25',
-  'qwen/qwen3-thinking': 'qwen/qwen3-235b-a22b-thinking-2507',
+  'qwen/qwen3-235b': 'qwen/qwen3-235b-a22b:free',
+  'qwen/qwen3-thinking': 'qwen/qwen3-235b-a22b-thinking:free',
+  'qwen/qwen-2.5-72b': 'qwen/qwen-2.5-72b-instruct',
+  'qwen/qwq-32b': 'qwen/qwq-32b:free',
   // xAI Grok models
   'xai/grok-4': 'x-ai/grok-4',
+  'xai/grok-4-thinking': 'x-ai/grok-4-thinking',
   'xai/grok-4-fast': 'x-ai/grok-4-fast',
-  'xai/grok-3': 'x-ai/grok-3',
+  'xai/grok-3': 'x-ai/grok-3-beta',
+  'xai/grok-2-vision': 'x-ai/grok-2-vision-1212',
   // Zhipu GLM models
-  'zhipu/glm-4.6': 'z-ai/glm-4.6',
-  'zhipu/glm-4.5': 'z-ai/glm-4.5',
-  'zhipu/glm-4.5-air': 'z-ai/glm-4.5-air',
+  'zhipu/glm-4.7': 'zhipuai/glm-4.7',
+  'zhipu/glm-4.6-flash': 'zhipuai/glm-4.6-flash',
+  'zhipu/glm-4.5': 'zhipuai/glm-4.5',
+  'zhipu/glm-4-long': 'zhipuai/glm-4-plus',
   // Mistral models
-  'mistral/mistral-medium-3.1': 'mistralai/mistral-medium-3.1',
-  'mistral/codestral-2508': 'mistralai/codestral-2508',
-  'mistral/devstral-medium': 'mistralai/devstral-medium-2507',
+  'mistral/mistral-large-2': 'mistralai/mistral-large-2411',
+  'mistral/mistral-medium-3.1': 'mistralai/mistral-medium-3',
+  'mistral/codestral-2508': 'mistralai/codestral-2501',
+  'mistral/devstral-medium': 'mistralai/devstral-small:free',
+  'mistral/pixtral-large': 'mistralai/pixtral-large-2411',
+  'mistral/ministral-8b': 'mistralai/ministral-8b',
   // Meta Llama models
+  'meta/llama-4-maverick': 'meta-llama/llama-4-maverick:free',
   'meta/llama-4-scout': 'meta-llama/llama-4-scout:free',
   'meta/llama-3.3-70b': 'meta-llama/llama-3.3-70b-instruct:free',
+  'meta/llama-3.1-405b': 'meta-llama/llama-3.1-405b-instruct',
+  'meta/llama-3.2-90b-vision': 'meta-llama/llama-3.2-90b-vision-instruct',
   // Moonshot Kimi models
-  'moonshot/kimi-k2': 'moonshotai/kimi-k2',
-  'moonshot/kimi-k2-thinking': 'moonshotai/kimi-k2-thinking',
-  // MiniMax models
-  'minimax/minimax-m2': 'minimax/minimax-m2',
+  'moonshot/kimi-k2': 'moonshotai/kimi-k2:free',
+  'moonshot/kimi-k2-thinking': 'moonshotai/kimi-k2-instruct',
+  'moonshot/kimi-vl': 'moonshotai/kimi-vl-a3b-thinking:free',
+  // Cohere models
+  'cohere/command-r-plus': 'cohere/command-r-plus',
+  'cohere/command-a': 'cohere/command-a',
+  // NVIDIA models
+  'nvidia/llama-3.1-nemotron-70b': 'nvidia/llama-3.1-nemotron-70b-instruct:free',
+  // AI21 models
+  'ai21/jamba-1.6-large': 'ai21/jamba-1.6-large',
+  // Amazon models
+  'amazon/nova-pro': 'amazon/nova-pro-v1',
+  'amazon/nova-lite': 'amazon/nova-lite-v1',
 };
 
 interface StreamEvent {
@@ -97,6 +128,7 @@ interface ApiKeyConfig {
 }
 
 // Determine which API to use based on available keys
+// Priority: User OpenRouter > User Provider Key > System OpenRouter > System Lovable
 function getApiConfig(model: string, userKeys?: ApiKeyConfig): { 
   apiUrl: string; 
   apiKey: string; 
@@ -137,18 +169,34 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
         apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
         break;
       default:
-        apiUrl = 'https://ai.gateway.lovable.dev/v1/chat/completions';
+        // Fall through to system keys
+        break;
     }
+    if (apiUrl) {
+      return {
+        apiUrl,
+        apiKey: userKeys[provider]!,
+        modelId: model,
+        provider,
+        isUserKey: true,
+      };
+    }
+  }
+
+  // Priority 3: System OpenRouter key (if configured) - can access all models
+  const SYSTEM_OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY");
+  if (SYSTEM_OPENROUTER_KEY) {
+    const openRouterModelId = OPENROUTER_MODEL_MAP[model] || model;
     return {
-      apiUrl,
-      apiKey: userKeys[provider]!,
-      modelId: model,
-      provider,
-      isUserKey: true,
+      apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
+      apiKey: SYSTEM_OPENROUTER_KEY,
+      modelId: openRouterModelId,
+      provider: 'openrouter-system',
+      isUserKey: false,
     };
   }
 
-  // Priority 3: System key (Lovable AI Gateway)
+  // Priority 4: Lovable AI Gateway (fallback) - limited to SYSTEM_AVAILABLE_MODELS
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   return {
     apiUrl: 'https://ai.gateway.lovable.dev/v1/chat/completions',
@@ -157,6 +205,15 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
     provider: 'lovable',
     isUserKey: false,
   };
+}
+
+// Check if system can handle the model (has OpenRouter or model is in Lovable's list)
+function canSystemHandleModel(model: string): boolean {
+  const SYSTEM_OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY");
+  if (SYSTEM_OPENROUTER_KEY) {
+    return true; // System OpenRouter can handle all models
+  }
+  return SYSTEM_AVAILABLE_MODELS.includes(model);
 }
 
 async function streamModel(
@@ -199,7 +256,7 @@ async function streamModel(
       "Content-Type": "application/json",
     };
     
-    if (provider === 'openrouter') {
+    if (provider === 'openrouter' || provider === 'openrouter-system') {
       headers["Authorization"] = `Bearer ${apiKey}`;
       headers["HTTP-Referer"] = "https://compareai.app";
       headers["X-Title"] = "CompareAI";
@@ -363,22 +420,33 @@ serve(async (req) => {
       ? userApiKeys 
       : undefined;
 
-    // Allow all models when user has OpenRouter key, otherwise filter to available models
-    let selectedModels = Array.isArray(models) && models.length > 0 ? models : AVAILABLE_MODELS;
+    // Determine which models can be used
+    let selectedModels = Array.isArray(models) && models.length > 0 ? models : SYSTEM_AVAILABLE_MODELS;
     
-    if (!userKeys?.openrouter) {
-      selectedModels = selectedModels.filter((m: string) => AVAILABLE_MODELS.includes(m));
+    // Filter models based on available keys
+    const hasUserOpenRouter = !!userKeys?.openrouter;
+    const hasSystemOpenRouter = !!Deno.env.get("OPENROUTER_API_KEY");
+    
+    if (!hasUserOpenRouter && !hasSystemOpenRouter) {
+      // Only Lovable gateway available - filter to supported models
+      selectedModels = selectedModels.filter((m: string) => SYSTEM_AVAILABLE_MODELS.includes(m));
+    } else if (!hasUserOpenRouter && hasSystemOpenRouter) {
+      // System OpenRouter available - allow all models
+      // No filtering needed
     }
+    // If user has OpenRouter key, allow all models
 
     if (selectedModels.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'No valid models selected' }),
+        JSON.stringify({ error: 'No valid models selected. Add an OpenRouter API key to access more models.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY && !userKeys?.openrouter && !Object.values(userKeys || {}).some(Boolean)) {
+    const SYSTEM_OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    
+    if (!LOVABLE_API_KEY && !SYSTEM_OPENROUTER_KEY && !userKeys?.openrouter && !Object.values(userKeys || {}).some(Boolean)) {
       console.error("No API keys configured");
       return new Response(
         JSON.stringify({ error: 'AI service not configured. Please add your API keys in Settings.' }),
@@ -387,7 +455,8 @@ serve(async (req) => {
     }
 
     const keySource = userKeys?.openrouter ? 'OpenRouter (user)' : 
-                     Object.values(userKeys || {}).some(Boolean) ? 'User API keys' : 
+                     Object.values(userKeys || {}).some(Boolean) ? 'User API keys' :
+                     SYSTEM_OPENROUTER_KEY ? 'OpenRouter (system)' :
                      'Lovable AI Gateway';
     console.log(`Starting streaming for ${selectedModels.length} models via ${keySource} with ${validContextMessages.length} context messages`);
 

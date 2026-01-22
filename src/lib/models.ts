@@ -1,4 +1,4 @@
-export type ModelProvider = 'openai' | 'google' | 'anthropic' | 'meta' | 'mistral' | 'deepseek' | 'qwen' | 'xai' | 'zhipu' | 'moonshot';
+export type ModelProvider = 'openai' | 'google' | 'anthropic' | 'meta' | 'mistral' | 'deepseek' | 'qwen' | 'xai' | 'zhipu' | 'moonshot' | 'cohere' | 'nvidia' | 'ai21' | 'amazon';
 
 export type ModelCapability = 'reasoning' | 'coding' | 'vision' | 'fast' | 'thinking';
 
@@ -12,6 +12,7 @@ export interface AIModel {
   requiresOpenRouter?: boolean;
   capabilities: ModelCapability[];
   isNew?: boolean;
+  contextLength?: string;
 }
 
 export const CAPABILITY_INFO: Record<ModelCapability, { label: string; icon: string; color: string }> = {
@@ -33,6 +34,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(142 76% 45%)',
     openRouterId: 'openai/gpt-5',
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -43,6 +45,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(142 76% 50%)',
     openRouterId: 'openai/gpt-5.1',
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -53,6 +56,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(142 76% 55%)',
     openRouterId: 'openai/gpt-5.2',
     capabilities: ['reasoning', 'coding', 'vision', 'thinking'],
+    contextLength: '400K',
     isNew: true,
   },
   {
@@ -63,6 +67,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(142 76% 60%)',
     openRouterId: 'openai/gpt-5-mini',
     capabilities: ['reasoning', 'fast'],
+    contextLength: '128K',
   },
   {
     id: 'openai/gpt-5-nano',
@@ -72,6 +77,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(142 76% 65%)',
     openRouterId: 'openai/gpt-5-nano',
     capabilities: ['fast'],
+    contextLength: '32K',
   },
   // Google Models
   {
@@ -82,6 +88,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(217 91% 60%)',
     openRouterId: 'google/gemini-2.5-pro',
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '1M',
   },
   {
     id: 'google/gemini-3-pro-preview',
@@ -91,6 +98,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(217 91% 50%)',
     openRouterId: 'google/gemini-3-pro-preview',
     capabilities: ['reasoning', 'coding', 'vision', 'thinking'],
+    contextLength: '1M',
     isNew: true,
   },
   {
@@ -101,6 +109,7 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(217 91% 70%)',
     openRouterId: 'google/gemini-2.5-flash',
     capabilities: ['reasoning', 'fast'],
+    contextLength: '1M',
   },
   {
     id: 'google/gemini-2.5-flash-lite',
@@ -110,12 +119,13 @@ export const AI_MODELS: AIModel[] = [
     color: 'hsl(217 91% 80%)',
     openRouterId: 'google/gemini-2.5-flash-lite',
     capabilities: ['fast'],
+    contextLength: '1M',
   },
 ];
 
 // OpenRouter additional models - requires OpenRouter API key
 export const OPENROUTER_MODELS: AIModel[] = [
-  // Anthropic Claude Models
+  // ===== Anthropic Claude Models =====
   {
     id: 'anthropic/claude-sonnet-4.5',
     name: 'Claude Sonnet 4.5',
@@ -125,6 +135,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'anthropic/claude-sonnet-4.5',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '200K',
     isNew: true,
   },
   {
@@ -136,6 +147,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'anthropic/claude-opus-4.5',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision', 'thinking'],
+    contextLength: '200K',
     isNew: true,
   },
   {
@@ -147,6 +159,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'anthropic/claude-opus-4',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '200K',
   },
   {
     id: 'anthropic/claude-haiku-4.5',
@@ -157,9 +170,33 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'anthropic/claude-haiku-4.5',
     requiresOpenRouter: true,
     capabilities: ['coding', 'fast'],
+    contextLength: '200K',
     isNew: true,
   },
-  // DeepSeek Models
+  {
+    id: 'anthropic/claude-3.5-sonnet',
+    name: 'Claude 3.5 Sonnet',
+    provider: 'anthropic',
+    description: 'Previous-gen Claude with excellent balance',
+    color: 'hsl(24 94% 58%)',
+    openRouterId: 'anthropic/claude-3.5-sonnet',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '200K',
+  },
+  {
+    id: 'anthropic/claude-3-opus',
+    name: 'Claude 3 Opus',
+    provider: 'anthropic',
+    description: 'Legacy flagship Claude model',
+    color: 'hsl(24 94% 42%)',
+    openRouterId: 'anthropic/claude-3-opus',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '200K',
+  },
+
+  // ===== DeepSeek Models =====
   {
     id: 'deepseek/deepseek-r1',
     name: 'DeepSeek R1',
@@ -169,6 +206,19 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'deepseek/deepseek-r1:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'thinking', 'coding'],
+    contextLength: '64K',
+    isNew: true,
+  },
+  {
+    id: 'deepseek/deepseek-r1-0528',
+    name: 'DeepSeek R1 0528',
+    provider: 'deepseek',
+    description: 'Latest R1 with improved reasoning',
+    color: 'hsl(200 95% 48%)',
+    openRouterId: 'deepseek/deepseek-r1-0528:free',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'thinking', 'coding'],
+    contextLength: '64K',
     isNew: true,
   },
   {
@@ -180,7 +230,19 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'deepseek/deepseek-chat-v3.1',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '64K',
     isNew: true,
+  },
+  {
+    id: 'deepseek/deepseek-v3',
+    name: 'DeepSeek V3',
+    provider: 'deepseek',
+    description: 'Powerful general-purpose model',
+    color: 'hsl(200 95% 58%)',
+    openRouterId: 'deepseek/deepseek-chat',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '64K',
   },
   {
     id: 'deepseek/deepseek-r1-distill-70b',
@@ -191,8 +253,22 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'deepseek/deepseek-r1-distill-llama-70b',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'thinking'],
+    contextLength: '32K',
   },
-  // Qwen Models
+  {
+    id: 'deepseek/deepseek-prover-v2',
+    name: 'DeepSeek Prover V2',
+    provider: 'deepseek',
+    description: 'Specialized for mathematical proofs',
+    color: 'hsl(200 95% 52%)',
+    openRouterId: 'deepseek/deepseek-prover-v2:free',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'thinking'],
+    contextLength: '64K',
+    isNew: true,
+  },
+
+  // ===== Qwen Models =====
   {
     id: 'qwen/qwen3-coder',
     name: 'Qwen 3 Coder',
@@ -202,6 +278,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'qwen/qwen3-coder',
     requiresOpenRouter: true,
     capabilities: ['coding'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -213,6 +290,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'qwen/qwen3-max',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
   },
   {
     id: 'qwen/qwen3-235b',
@@ -220,9 +298,10 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'qwen',
     description: 'Massive 235B parameter model',
     color: 'hsl(270 70% 45%)',
-    openRouterId: 'qwen/qwen3-235b-a22b-07-25',
+    openRouterId: 'qwen/qwen3-235b-a22b:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -231,12 +310,37 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'qwen',
     description: 'Enhanced reasoning with thinking mode',
     color: 'hsl(270 70% 60%)',
-    openRouterId: 'qwen/qwen3-235b-a22b-thinking-2507',
+    openRouterId: 'qwen/qwen3-235b-a22b-thinking:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'thinking'],
+    contextLength: '128K',
     isNew: true,
   },
-  // Grok Models (xAI)
+  {
+    id: 'qwen/qwen-2.5-72b',
+    name: 'Qwen 2.5 72B',
+    provider: 'qwen',
+    description: 'Strong 72B parameter model',
+    color: 'hsl(270 70% 58%)',
+    openRouterId: 'qwen/qwen-2.5-72b-instruct',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
+  },
+  {
+    id: 'qwen/qwq-32b',
+    name: 'QwQ 32B',
+    provider: 'qwen',
+    description: 'Reasoning-focused smaller model',
+    color: 'hsl(270 70% 62%)',
+    openRouterId: 'qwen/qwq-32b:free',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'thinking'],
+    contextLength: '32K',
+    isNew: true,
+  },
+
+  // ===== Grok Models (xAI) =====
   {
     id: 'xai/grok-4',
     name: 'Grok 4',
@@ -246,6 +350,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'x-ai/grok-4',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -257,6 +362,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'x-ai/grok-4-thinking',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'thinking'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -268,6 +374,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'x-ai/grok-4-fast',
     requiresOpenRouter: true,
     capabilities: ['fast'],
+    contextLength: '128K',
   },
   {
     id: 'xai/grok-3',
@@ -275,11 +382,24 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'xai',
     description: 'Powerful reasoning from xAI',
     color: 'hsl(0 0% 50%)',
-    openRouterId: 'x-ai/grok-3',
+    openRouterId: 'x-ai/grok-3-beta',
     requiresOpenRouter: true,
     capabilities: ['reasoning'],
+    contextLength: '128K',
   },
-  // GLM Models (Zhipu)
+  {
+    id: 'xai/grok-2-vision',
+    name: 'Grok 2 Vision',
+    provider: 'xai',
+    description: 'Grok with vision capabilities',
+    color: 'hsl(0 0% 55%)',
+    openRouterId: 'x-ai/grok-2-vision-1212',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'vision'],
+    contextLength: '32K',
+  },
+
+  // ===== GLM Models (Zhipu) =====
   {
     id: 'zhipu/glm-4.7',
     name: 'GLM 4.7',
@@ -289,6 +409,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'zhipuai/glm-4.7',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -300,6 +421,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'zhipuai/glm-4.6-flash',
     requiresOpenRouter: true,
     capabilities: ['fast', 'reasoning'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -311,17 +433,31 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'zhipuai/glm-4.5',
     requiresOpenRouter: true,
     capabilities: ['reasoning'],
+    contextLength: '128K',
   },
-  // Mistral Models
+  {
+    id: 'zhipu/glm-4-long',
+    name: 'GLM 4 Long',
+    provider: 'zhipu',
+    description: 'Extended context window variant',
+    color: 'hsl(160 70% 55%)',
+    openRouterId: 'zhipuai/glm-4-plus',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '1M',
+  },
+
+  // ===== Mistral Models =====
   {
     id: 'mistral/mistral-large-2',
     name: 'Mistral Large 2',
     provider: 'mistral',
     description: 'Most powerful Mistral model',
     color: 'hsl(35 95% 50%)',
-    openRouterId: 'mistralai/mistral-large-2',
+    openRouterId: 'mistralai/mistral-large-2411',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -330,9 +466,10 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'mistral',
     description: 'Balanced Mistral for general tasks',
     color: 'hsl(35 95% 55%)',
-    openRouterId: 'mistralai/mistral-medium-3.1',
+    openRouterId: 'mistralai/mistral-medium-3',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
   },
   {
     id: 'mistral/codestral-2508',
@@ -340,9 +477,10 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'mistral',
     description: 'Specialized coding model from Mistral',
     color: 'hsl(35 95% 60%)',
-    openRouterId: 'mistralai/codestral-2508',
+    openRouterId: 'mistralai/codestral-2501',
     requiresOpenRouter: true,
     capabilities: ['coding'],
+    contextLength: '256K',
     isNew: true,
   },
   {
@@ -351,11 +489,35 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'mistral',
     description: 'Development-focused Mistral model',
     color: 'hsl(35 95% 65%)',
-    openRouterId: 'mistralai/devstral-medium-2507',
+    openRouterId: 'mistralai/devstral-small:free',
     requiresOpenRouter: true,
-    capabilities: ['coding'],
+    capabilities: ['coding', 'fast'],
+    contextLength: '128K',
   },
-  // Meta Llama Models
+  {
+    id: 'mistral/pixtral-large',
+    name: 'Pixtral Large',
+    provider: 'mistral',
+    description: 'Vision-capable Mistral model',
+    color: 'hsl(35 95% 52%)',
+    openRouterId: 'mistralai/pixtral-large-2411',
+    requiresOpenRouter: true,
+    capabilities: ['vision', 'reasoning'],
+    contextLength: '128K',
+  },
+  {
+    id: 'mistral/ministral-8b',
+    name: 'Ministral 8B',
+    provider: 'mistral',
+    description: 'Efficient small model for simple tasks',
+    color: 'hsl(35 95% 70%)',
+    openRouterId: 'mistralai/ministral-8b',
+    requiresOpenRouter: true,
+    capabilities: ['fast'],
+    contextLength: '128K',
+  },
+
+  // ===== Meta Llama Models =====
   {
     id: 'meta/llama-4-maverick',
     name: 'Llama 4 Maverick',
@@ -365,6 +527,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'meta-llama/llama-4-maverick:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '1M',
     isNew: true,
   },
   {
@@ -376,6 +539,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'meta-llama/llama-4-scout:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '512K',
     isNew: true,
   },
   {
@@ -387,17 +551,42 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'meta-llama/llama-3.3-70b-instruct:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
   },
-  // Kimi/Moonshot Models
+  {
+    id: 'meta/llama-3.1-405b',
+    name: 'Llama 3.1 405B',
+    provider: 'meta',
+    description: 'Largest open-source model ever',
+    color: 'hsl(214 100% 42%)',
+    openRouterId: 'meta-llama/llama-3.1-405b-instruct',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
+  },
+  {
+    id: 'meta/llama-3.2-90b-vision',
+    name: 'Llama 3.2 90B Vision',
+    provider: 'meta',
+    description: 'Vision-enabled Llama model',
+    color: 'hsl(214 100% 52%)',
+    openRouterId: 'meta-llama/llama-3.2-90b-vision-instruct',
+    requiresOpenRouter: true,
+    capabilities: ['vision', 'reasoning'],
+    contextLength: '128K',
+  },
+
+  // ===== Kimi/Moonshot Models =====
   {
     id: 'moonshot/kimi-k2',
     name: 'Kimi K2',
     provider: 'moonshot',
     description: 'Advanced reasoning model from Moonshot',
     color: 'hsl(280 70% 55%)',
-    openRouterId: 'moonshotai/kimi-k2',
+    openRouterId: 'moonshotai/kimi-k2:free',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -406,12 +595,26 @@ export const OPENROUTER_MODELS: AIModel[] = [
     provider: 'moonshot',
     description: 'Enhanced chain-of-thought reasoning',
     color: 'hsl(280 70% 50%)',
-    openRouterId: 'moonshotai/kimi-k2-thinking',
+    openRouterId: 'moonshotai/kimi-k2-instruct',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'thinking'],
+    contextLength: '128K',
     isNew: true,
   },
-  // OpenAI OSS Models
+  {
+    id: 'moonshot/kimi-vl',
+    name: 'Kimi VL',
+    provider: 'moonshot',
+    description: 'Vision-language model from Moonshot',
+    color: 'hsl(280 70% 60%)',
+    openRouterId: 'moonshotai/kimi-vl-a3b-thinking:free',
+    requiresOpenRouter: true,
+    capabilities: ['vision', 'reasoning'],
+    contextLength: '128K',
+    isNew: true,
+  },
+
+  // ===== OpenAI OSS Models =====
   {
     id: 'openai/gpt-oss-200b',
     name: 'GPT-OSS 200B',
@@ -421,6 +624,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'openai/gpt-oss-200b',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
     isNew: true,
   },
   {
@@ -432,6 +636,7 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'openai/gpt-oss-120b',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
   },
   {
     id: 'openai/gpt-oss-20b',
@@ -442,18 +647,131 @@ export const OPENROUTER_MODELS: AIModel[] = [
     openRouterId: 'openai/gpt-oss-20b',
     requiresOpenRouter: true,
     capabilities: ['fast'],
+    contextLength: '32K',
   },
-  // MiniMax Models
   {
-    id: 'minimax/minimax-m2',
-    name: 'MiniMax M2',
-    provider: 'zhipu',
-    description: 'Latest MiniMax with enhanced capabilities',
-    color: 'hsl(320 70% 55%)',
-    openRouterId: 'minimax/minimax-m2',
+    id: 'openai/o1',
+    name: 'OpenAI o1',
+    provider: 'openai',
+    description: 'Advanced reasoning model',
+    color: 'hsl(142 76% 42%)',
+    openRouterId: 'openai/o1',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'thinking'],
+    contextLength: '200K',
+    isNew: true,
+  },
+  {
+    id: 'openai/o1-pro',
+    name: 'OpenAI o1 Pro',
+    provider: 'openai',
+    description: 'Enhanced o1 with extended thinking',
+    color: 'hsl(142 76% 36%)',
+    openRouterId: 'openai/o1-pro',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'thinking'],
+    contextLength: '200K',
+    isNew: true,
+  },
+  {
+    id: 'openai/o3-mini',
+    name: 'OpenAI o3 Mini',
+    provider: 'openai',
+    description: 'Compact reasoning model',
+    color: 'hsl(142 76% 52%)',
+    openRouterId: 'openai/o3-mini',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'fast'],
+    contextLength: '200K',
+    isNew: true,
+  },
+  {
+    id: 'openai/gpt-4.1',
+    name: 'GPT-4.1',
+    provider: 'openai',
+    description: 'Legacy GPT-4 with improvements',
+    color: 'hsl(142 76% 58%)',
+    openRouterId: 'openai/gpt-4.1',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding', 'vision'],
+    contextLength: '1M',
+  },
+
+  // ===== Cohere Models =====
+  {
+    id: 'cohere/command-r-plus',
+    name: 'Command R+',
+    provider: 'cohere',
+    description: 'Powerful enterprise model from Cohere',
+    color: 'hsl(340 70% 50%)',
+    openRouterId: 'cohere/command-r-plus',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
+  },
+  {
+    id: 'cohere/command-a',
+    name: 'Command A',
+    provider: 'cohere',
+    description: 'Latest Command model from Cohere',
+    color: 'hsl(340 70% 45%)',
+    openRouterId: 'cohere/command-a',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning'],
+    contextLength: '256K',
+    isNew: true,
+  },
+
+  // ===== NVIDIA Models =====
+  {
+    id: 'nvidia/llama-3.1-nemotron-70b',
+    name: 'Nemotron 70B',
+    provider: 'nvidia',
+    description: 'NVIDIA-tuned Llama 3.1',
+    color: 'hsl(83 100% 40%)',
+    openRouterId: 'nvidia/llama-3.1-nemotron-70b-instruct:free',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning', 'coding'],
+    contextLength: '128K',
+  },
+
+  // ===== AI21 Models =====
+  {
+    id: 'ai21/jamba-1.6-large',
+    name: 'Jamba 1.6 Large',
+    provider: 'ai21',
+    description: 'Hybrid SSM-Transformer architecture',
+    color: 'hsl(190 70% 50%)',
+    openRouterId: 'ai21/jamba-1.6-large',
+    requiresOpenRouter: true,
+    capabilities: ['reasoning'],
+    contextLength: '256K',
+    isNew: true,
+  },
+
+  // ===== Amazon Models =====
+  {
+    id: 'amazon/nova-pro',
+    name: 'Amazon Nova Pro',
+    provider: 'amazon',
+    description: 'Advanced reasoning from AWS',
+    color: 'hsl(28 90% 50%)',
+    openRouterId: 'amazon/nova-pro-v1',
     requiresOpenRouter: true,
     capabilities: ['reasoning', 'vision'],
+    contextLength: '300K',
     isNew: true,
+  },
+  {
+    id: 'amazon/nova-lite',
+    name: 'Amazon Nova Lite',
+    provider: 'amazon',
+    description: 'Fast and efficient AWS model',
+    color: 'hsl(28 90% 60%)',
+    openRouterId: 'amazon/nova-lite-v1',
+    requiresOpenRouter: true,
+    capabilities: ['fast', 'vision'],
+    contextLength: '300K',
   },
 ];
 
@@ -469,6 +787,10 @@ export const PROVIDER_INFO: Record<ModelProvider, { name: string; color: string 
   xai: { name: 'xAI', color: 'bg-gray-500' },
   zhipu: { name: 'Zhipu', color: 'bg-teal-500' },
   moonshot: { name: 'Moonshot', color: 'bg-violet-500' },
+  cohere: { name: 'Cohere', color: 'bg-rose-500' },
+  nvidia: { name: 'NVIDIA', color: 'bg-lime-500' },
+  ai21: { name: 'AI21', color: 'bg-sky-500' },
+  amazon: { name: 'Amazon', color: 'bg-orange-600' },
 };
 
 // Storage key for API keys - must match ApiKeysSettings
@@ -513,4 +835,9 @@ export const getProviderColor = (provider: ModelProvider): string => {
 
 export const getProviderName = (provider: ModelProvider): string => {
   return PROVIDER_INFO[provider]?.name || provider;
+};
+
+// Get total model count
+export const getTotalModelCount = (): number => {
+  return AI_MODELS.length + OPENROUTER_MODELS.length;
 };
