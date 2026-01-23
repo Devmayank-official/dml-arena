@@ -807,7 +807,16 @@ export const getStoredApiKeys = (): Record<string, string> => {
 
 export const hasOpenRouterKey = (): boolean => {
   const keys = getStoredApiKeys();
-  return !!keys.openrouter;
+  // Return true if user has their own key OR system key is available
+  // System key placeholder means we always have access to OpenRouter models
+  return !!keys.openrouter || hasSystemOpenRouterKey();
+};
+
+// Check if system OpenRouter key is configured (placeholder - will be true when key is set)
+export const hasSystemOpenRouterKey = (): boolean => {
+  // This returns true to indicate system OpenRouter key is available
+  // The actual key is stored as a secret in Supabase and used in edge functions
+  return true;
 };
 
 export const getModelById = (id: string): AIModel | undefined => {

@@ -14,10 +14,15 @@ export interface Subscription {
   updated_at: string;
 }
 
-// Free plan limits
+// Plan limits
 export const FREE_PLAN_LIMITS = {
   monthlyQueries: 5,
   allowedModels: ['google/gemini-2.5-flash-lite', 'openai/gpt-5-nano'],
+  maxModelsPerComparison: 2,
+};
+
+export const PRO_PLAN_LIMITS = {
+  maxModelsPerComparison: 5,
 };
 
 export const useSubscription = () => {

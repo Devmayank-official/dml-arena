@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
+import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { ModelPresetSelector } from '@/components/ModelPresetSelector';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,6 +56,10 @@ export function ModelSelector({
   const { canUseModel, isPro } = useSubscription();
   const isMobile = useIsMobile();
   
+  // Model selection limits
+  const maxModels = isPro ? PRO_PLAN_LIMITS.maxModelsPerComparison : FREE_PLAN_LIMITS.maxModelsPerComparison;
+  const hasReachedLimit = selectedModels.length >= maxModels;
+  
   // Check if OpenRouter key is configured - refresh on storage changes
   const [openRouterConfigured, setOpenRouterConfigured] = useState(false);
   
@@ -74,7 +78,8 @@ export function ModelSelector({
     };
   }, []);
 
-  const allAvailableModels = useMemo(() => getAllModels(openRouterConfigured), [openRouterConfigured]);
+  // Always show all models - system OpenRouter key enables access
+  const allAvailableModels = useMemo(() => getAllModels(true), []);
 
   // Filter models by search and capabilities
   const filteredModels = useMemo(() => {
@@ -263,16 +268,21 @@ export function ModelSelector({
                     </Badge>
                   )}
                 </div>
-                {models.map((model) => (
-                  <ModelItem
-                    key={model.id}
-                    model={model}
-                    isSelected={selectedModels.includes(model.id)}
-                    onToggle={() => onToggleModel(model.id)}
-                    isLocked={!canUseModel(model.id)}
-                    isMobile={isMobile}
-                  />
-                ))}
+                {models.map((model) => {
+                  const isSelected = selectedModels.includes(model.id);
+                  const isAtLimit = hasReachedLimit && !isSelected;
+                  return (
+                    <ModelItem
+                      key={model.id}
+                      model={model}
+                      isSelected={isSelected}
+                      onToggle={() => onToggleModel(model.id)}
+                      isLocked={!canUseModel(model.id)}
+                      isAtLimit={isAtLimit}
+                      isMobile={isMobile}
+                    />
+                  );
+                })}
               </div>
             );
           })}
@@ -355,15 +365,12 @@ export function ModelSelector({
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-sm font-medium text-muted-foreground">Select Models</h3>
-          {!isPro && (
-            <Badge variant="secondary" className="text-xs">
-              Free: 2 models only
-            </Badge>
-          )}
-          {openRouterConfigured && (
-            <Badge variant="outline" className="text-xs gap-1 border-pink-500/30 text-pink-500">
-              <Key className="h-2.5 w-2.5" />
-              OpenRouter Active
+          <Badge variant={isPro ? "default" : "secondary"} className="text-xs">
+            Max {maxModels} models
+          </Badge>
+          {hasReachedLimit && (
+            <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-500">
+              Limit reached
             </Badge>
           )}
         </div>
@@ -371,11 +378,11 @@ export function ModelSelector({
           {onSetModels && (
             <ModelPresetSelector
               selectedModels={selectedModels}
-              onApplyPreset={onSetModels}
+              onApplyPreset={(models) => onSetModels(models.slice(0, maxModels))}
             />
           )}
           <span className="text-xs text-muted-foreground">
-            {selectedModels.length} of {totalModels}
+            {selectedModels.length}/{maxModels} selected
           </span>
         </div>
       </div>
@@ -433,31 +440,35 @@ interface ModelItemProps {
   isSelected: boolean;
   onToggle: () => void;
   isLocked: boolean;
+  isAtLimit: boolean;
   isMobile: boolean;
 }
 
-function ModelItem({ model, isSelected, onToggle, isLocked, isMobile }: ModelItemProps) {
+function ModelItem({ model, isSelected, onToggle, isLocked, isAtLimit, isMobile }: ModelItemProps) {
   const providerColor = getProviderColor(model.provider);
+  const isDisabled = isLocked || isAtLimit;
   
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={isLocked ? undefined : onToggle}
-        disabled={isLocked}
+        onClick={isDisabled ? undefined : onToggle}
+        disabled={isDisabled}
         className={cn(
           "flex-1 flex items-center gap-3 px-3 py-2.5 sm:py-2 rounded-xl transition-all duration-200 text-left",
           "touch-manipulation active:scale-[0.98]",
-          isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-secondary/50",
-          isSelected && !isLocked && "bg-primary/10 ring-1 ring-primary/30"
+          isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-secondary/50",
+          isSelected && !isDisabled && "bg-primary/10 ring-1 ring-primary/30"
         )}
       >
         <div className={cn(
           "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
-          isLocked ? "border-muted-foreground/30 bg-muted" :
+          isDisabled ? "border-muted-foreground/30 bg-muted" :
           isSelected ? "bg-primary border-primary" : "border-muted-foreground/30"
         )}>
           {isLocked ? (
             <Lock className="h-3 w-3 text-muted-foreground" />
+          ) : isAtLimit ? (
+            <span className="text-[9px] text-muted-foreground">MAX</span>
           ) : isSelected ? (
             <Check className="h-3 w-3 text-primary-foreground" />
           ) : null}
