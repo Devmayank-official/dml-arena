@@ -25,6 +25,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useConversation } from '@/hooks/useConversation';
 import { useRatings } from '@/hooks/useRatings';
+import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,10 @@ export default function Index() {
   const streaming = useStreamingComparison();
   const conversation = useConversation();
   const ratings = useRatings(settings.autoSaveHistory);
+  const { isPro } = useSubscription();
+  
+  // Model selection limit
+  const maxModels = isPro ? PRO_PLAN_LIMITS.maxModelsPerComparison : FREE_PLAN_LIMITS.maxModelsPerComparison;
 
   // Initialize selected models from settings
   useEffect(() => {
@@ -159,15 +164,26 @@ export default function Index() {
   };
 
   const handleToggleModel = (modelId: string) => {
-    setSelectedModels(prev =>
-      prev.includes(modelId)
-        ? prev.filter(id => id !== modelId)
-        : [...prev, modelId]
-    );
+    setSelectedModels(prev => {
+      if (prev.includes(modelId)) {
+        return prev.filter(id => id !== modelId);
+      }
+      // Check if at limit
+      if (prev.length >= maxModels) {
+        toast({
+          title: `Max ${maxModels} models`,
+          description: isPro ? 'Pro plan allows up to 5 models.' : 'Upgrade to Pro for up to 5 models.',
+          variant: 'destructive',
+        });
+        return prev;
+      }
+      return [...prev, modelId];
+    });
   };
 
   const handleSelectAll = () => {
-    setSelectedModels(AI_MODELS.map(m => m.id));
+    // Only select up to the max allowed
+    setSelectedModels(AI_MODELS.slice(0, maxModels).map(m => m.id));
   };
 
   const handleDeselectAll = () => {
