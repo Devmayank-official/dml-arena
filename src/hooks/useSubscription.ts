@@ -84,23 +84,50 @@ export const useSubscription = () => {
 
   const hasReachedLimit = !isPro && remainingQueries <= 0;
 
-  const incrementUsage = async () => {
-    if (!subscription || isPro) return;
+  const incrementUsage = async (): Promise<{ success: boolean; error?: string; remaining?: number }> => {
+    if (!user) return { success: false, error: 'Not authenticated' };
+    if (isPro) return { success: true, remaining: Infinity };
 
     try {
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({ monthly_usage: (subscription.monthly_usage || 0) + 1 })
-        .eq('user_id', user?.id);
+      // Get session for auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return { success: false, error: 'Not authenticated' };
+      }
 
-      if (!error) {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-usage`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return { success: false, error: 'Usage limit reached', remaining: 0 };
+        }
+        return { success: false, error: data.error || 'Failed to track usage' };
+      }
+
+      // Update local state with server response
+      if (data.success) {
         setSubscription(prev => prev ? {
           ...prev,
-          monthly_usage: (prev.monthly_usage || 0) + 1,
+          monthly_usage: data.usage || (prev.monthly_usage + 1),
         } : null);
+        return { success: true, remaining: data.remaining };
       }
+
+      return { success: true, remaining: data.remaining };
     } catch (err) {
       console.error('Error incrementing usage:', err);
+      return { success: false, error: 'Network error' };
     }
   };
 

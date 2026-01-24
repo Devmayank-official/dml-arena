@@ -221,6 +221,7 @@ export type Database = {
           history_type: string
           id: string
           model_id: string
+          user_id: string | null
           vote_type: string
         }
         Insert: {
@@ -229,6 +230,7 @@ export type Database = {
           history_type: string
           id?: string
           model_id: string
+          user_id?: string | null
           vote_type: string
         }
         Update: {
@@ -237,6 +239,7 @@ export type Database = {
           history_type?: string
           id?: string
           model_id?: string
+          user_id?: string | null
           vote_type?: string
         }
         Relationships: []
@@ -248,6 +251,7 @@ export type Database = {
           history_type: string
           id: string
           share_code: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -255,6 +259,7 @@ export type Database = {
           history_type: string
           id?: string
           share_code?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -262,6 +267,7 @@ export type Database = {
           history_type?: string
           id?: string
           share_code?: string
+          user_id?: string | null
         }
         Relationships: []
       }

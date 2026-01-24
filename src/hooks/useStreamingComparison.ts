@@ -50,6 +50,9 @@ export function useStreamingComparison() {
     setResponses(new Map());
 
     try {
+      // Get auth session for tracking
+      const { data: { session } } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
+      
       // Pass user API keys if available (they take priority over system keys)
       const userApiKeys: ApiKeyConfig | undefined = isLoaded && Object.values(apiKeys).some(Boolean) 
         ? apiKeys 
@@ -61,7 +64,7 @@ export function useStreamingComparison() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({ 
             message, 
