@@ -172,7 +172,7 @@ export function useHistory(enabled: boolean) {
       } else {
         const { data, error } = await supabase
           .from('response_votes')
-          .insert({ history_id: historyId, history_type: historyType, model_id: modelId, vote_type: voteType })
+          .insert({ history_id: historyId, history_type: historyType, model_id: modelId, vote_type: voteType, user_id: user?.id })
           .select()
           .single();
 
@@ -219,7 +219,7 @@ export function useHistory(enabled: boolean) {
 
       const { data, error } = await supabase
         .from('shared_results')
-        .insert({ history_id: historyId, history_type: historyType })
+        .insert({ history_id: historyId, history_type: historyType, user_id: user?.id })
         .select()
         .single();
 

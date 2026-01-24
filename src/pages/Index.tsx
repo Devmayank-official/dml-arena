@@ -69,7 +69,7 @@ export default function Index() {
   const streaming = useStreamingComparison();
   const conversation = useConversation();
   const ratings = useRatings(settings.autoSaveHistory);
-  const { isPro } = useSubscription();
+  const { isPro, hasReachedLimit, incrementUsage, refetch: refetchSubscription } = useSubscription();
   
   // Model selection limit
   const maxModels = isPro ? PRO_PLAN_LIMITS.maxModelsPerComparison : FREE_PLAN_LIMITS.maxModelsPerComparison;
@@ -191,6 +191,38 @@ export default function Index() {
   };
 
   const handleSendMessage = async (message: string) => {
+    // Check usage limit for free users BEFORE running comparison
+    if (!isPro) {
+      if (hasReachedLimit) {
+        toast({
+          title: 'Usage limit reached',
+          description: 'Upgrade to Pro for unlimited queries.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Track usage on the backend (secure, server-side)
+      const usageResult = await incrementUsage();
+      if (!usageResult.success) {
+        if (usageResult.error === 'Usage limit reached') {
+          toast({
+            title: 'Usage limit reached',
+            description: 'Upgrade to Pro for unlimited queries.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: usageResult.error || 'Failed to track usage',
+            variant: 'destructive',
+          });
+        }
+        refetchSubscription();
+        return;
+      }
+    }
+
     if (deepMode) {
       const debateModels = selectedModels.filter(m => DEBATE_MODELS.includes(m));
       if (debateModels.length < 2) {
