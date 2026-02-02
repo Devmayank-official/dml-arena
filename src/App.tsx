@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TourProvider } from "@/contexts/TourContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { CommandPalette } from "@/components/CommandPalette";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import Landing from "./pages/Landing";
 import Pricing from "./pages/Pricing";
@@ -68,6 +69,7 @@ function AppContent() {
         onClose={() => setIsHelpOpen(false)} 
         shortcuts={shortcuts} 
       />
+      <CommandPalette />
     </>
   );
 }
