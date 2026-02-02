@@ -330,6 +330,11 @@ export default function Index() {
             onToggle={setDeepMode}
             settings={deepModeSettings}
             onSettingsChange={setDeepModeSettings}
+            onVoicePrompt={(prompt) => {
+              if (prompt.trim()) {
+                handleSendMessage(prompt.trim());
+              }
+            }}
           />
         </section>
 

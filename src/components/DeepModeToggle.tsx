@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { Brain, Minus, Plus, ChevronDown, ChevronUp, Zap, Target, Flame, Settings2, Lock } from 'lucide-react';
+import { Brain, Minus, Plus, ChevronDown, ChevronUp, Zap, Target, Flame, Settings2, Lock, Mic, MicOff, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,10 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useVoiceInput } from '@/hooks/useVoiceInput';
+import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface DeepModeSettings {
   rounds: number;
@@ -34,6 +37,7 @@ interface DeepModeToggleProps {
   onToggle: (enabled: boolean) => void;
   settings: DeepModeSettings;
   onSettingsChange: (settings: DeepModeSettings) => void;
+  onVoicePrompt?: (prompt: string) => void;
 }
 
 type PresetMode = 'quick' | 'standard' | 'deep';
@@ -134,10 +138,41 @@ function getActivePreset(settings: DeepModeSettings): PresetMode | null {
   return null;
 }
 
-export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }: DeepModeToggleProps) {
+export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange, onVoicePrompt }: DeepModeToggleProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const { canUseDeepMode, isPro } = useSubscription();
+  const { toast } = useToast();
   const activePreset = getActivePreset(settings);
+
+  const {
+    isListening,
+    isSupported: voiceSupported,
+    interimTranscript,
+    startListening,
+    stopListening,
+    error: voiceError,
+  } = useVoiceInput({
+    onTranscript: (transcript) => {
+      if (onVoicePrompt) {
+        onVoicePrompt(transcript);
+        toast({
+          title: 'Voice captured',
+          description: `"${transcript.slice(0, 50)}${transcript.length > 50 ? '...' : ''}"`,
+        });
+      }
+    },
+  });
+
+  // Show voice error toast
+  useEffect(() => {
+    if (voiceError) {
+      toast({
+        title: 'Voice Input Error',
+        description: voiceError,
+        variant: 'destructive',
+      });
+    }
+  }, [voiceError, toast]);
 
   const applyPreset = (preset: PresetMode) => {
     onSettingsChange({
@@ -161,6 +196,14 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
 
   const increaseRounds = () => {
     if (settings.rounds < 5) onSettingsChange({ ...settings, rounds: settings.rounds + 1 });
+  };
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -202,6 +245,27 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
             </p>
           </div>
         </div>
+        
+        {/* Voice input for Deep Mode */}
+        {enabled && voiceSupported && onVoicePrompt && (
+          <Button
+            type="button"
+            size="icon"
+            variant={isListening ? "destructive" : "outline"}
+            onClick={handleVoiceToggle}
+            className={cn(
+              "shrink-0 h-8 w-8 rounded-lg transition-all duration-200",
+              isListening && "animate-pulse"
+            )}
+          >
+            {isListening ? (
+              <MicOff className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+        
         <Switch
           checked={enabled}
           onCheckedChange={handleToggle}
@@ -209,6 +273,37 @@ export function DeepModeToggle({ enabled, onToggle, settings, onSettingsChange }
           className="data-[state=checked]:bg-accent shrink-0"
         />
       </div>
+
+      {/* Voice listening indicator */}
+      <AnimatePresence>
+        {isListening && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 overflow-hidden"
+          >
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 rounded-lg border border-red-500/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+              </span>
+              <span className="text-xs text-red-500 flex-1">
+                {interimTranscript || 'Listening for Deep Mode prompt...'}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={stopListening}
+                className="h-5 w-5 text-red-500 hover:text-red-600"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {enabled && (
         <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 space-y-3 sm:space-y-4">
