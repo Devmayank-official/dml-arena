@@ -186,3 +186,15 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* Safe area for mobile bottom nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Add bottom padding to main content on mobile to account for bottom nav */
+@media (max-width: 767px) {
+  .mobile-nav-padding {
+    padding-bottom: 4.5rem;
+  }
+}

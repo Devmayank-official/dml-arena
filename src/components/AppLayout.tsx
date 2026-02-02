@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AppLayoutProps {
@@ -23,10 +24,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="flex flex-1 w-full">
           {/* Desktop sidebar on left side - hidden on mobile */}
           {!isMobile && <AppSidebar />}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 mobile-nav-padding">
             {children}
           </main>
         </div>
+        {/* Mobile bottom navigation */}
+        <MobileBottomNav />
       </div>
     </SidebarProvider>
   );
