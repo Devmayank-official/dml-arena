@@ -25,6 +25,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useConversation } from '@/hooks/useConversation';
 import { useRatings } from '@/hooks/useRatings';
+import { useDebateRatings } from '@/hooks/useDebateRatings';
 import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
@@ -69,6 +70,7 @@ export default function Index() {
   const streaming = useStreamingComparison();
   const conversation = useConversation();
   const ratings = useRatings(settings.autoSaveHistory);
+  const debateRatings = useDebateRatings(currentDebateId);
   const { isPro, hasReachedLimit, incrementUsage, refetch: refetchSubscription } = useSubscription();
   
   // Model selection limit
@@ -288,6 +290,12 @@ export default function Index() {
     }
   };
 
+  const handleDebateRating = (modelId: string, round: number, rating: number) => {
+    if (currentDebateId) {
+      debateRatings.rateResponse(modelId, round, rating);
+    }
+  };
+
   const handleRegenerate = (modelId: string) => {
     if (!currentQuery) return;
     // Regenerate just this one model
@@ -390,6 +398,9 @@ export default function Index() {
               showVoting={!!currentDebateId}
               onVote={handleDebateVote}
               getVote={(modelId) => history.getVote(currentDebateId || '', modelId)}
+              showRating={!!currentDebateId}
+              onRate={handleDebateRating}
+              getRating={(modelId, round) => debateRatings.getRating(modelId, round)}
             />
             {deepDebate.error && (
               <div className="p-4 rounded-lg bg-destructive/10 border border-destructive text-destructive text-sm">
