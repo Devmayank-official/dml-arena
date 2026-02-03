@@ -57,7 +57,7 @@ const Pricing = () => {
     },
     {
       question: "Which AI models are included in the free plan?",
-      answer: "The free plan includes GPT-5 Nano and Gemini Flash Lite - both are fast, capable models perfect for quick comparisons. Pro unlocks all 7 models including GPT-5, Gemini 2.5 Pro, and Gemini 3 Pro."
+      answer: "The free plan includes GPT-5 Nano and Gemini Flash Lite - both are fast, capable models perfect for quick comparisons. Pro unlocks all 55+ models including GPT-5, Claude 4.5, Gemini 3 Pro, DeepSeek R1, Grok 4, and many more from 14 providers."
     },
     {
       question: "What is Deep Mode?",
@@ -69,7 +69,7 @@ const Pricing = () => {
     },
     {
       question: "What export formats are available?",
-      answer: "Pro users can export comparisons as PDF (for printing/sharing), JSON (for developers), YAML, XML, and Markdown. Perfect for documentation, reports, or integrating results into your workflow."
+      answer: "Pro users can export comparisons in 11 formats: PDF, JSON, YAML, XML, Markdown, Plain Text, TOML, Python, JavaScript, CSV, and SQLite. Perfect for documentation, reports, or integrating results into your workflow."
     },
     {
       question: "Is my data private?",
@@ -232,7 +232,7 @@ const Pricing = () => {
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>All 7 AI models</span>
+                      <span>All 55+ AI models</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />

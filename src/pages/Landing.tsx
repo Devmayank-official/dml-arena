@@ -118,10 +118,10 @@ const Landing = () => {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Brain, title: "7 AI Models", desc: "GPT-5, Gemini 3, and more top models" },
+              { icon: Brain, title: "55+ AI Models", desc: "GPT-5, Claude 4.5, Gemini 3, DeepSeek R1, Grok 4 & more" },
               { icon: MessageSquare, title: "Deep Mode", desc: "Multi-round debates between AIs" },
               { icon: Users, title: "Community", desc: "Share and vote on comparisons" },
-              { icon: Share2, title: "Export & Share", desc: "Save results in multiple formats" },
+              { icon: Share2, title: "11 Export Formats", desc: "PDF, JSON, YAML, CSV, SQLite & more" },
             ].map((feature, i) => (
               <motion.div
                 key={i}
