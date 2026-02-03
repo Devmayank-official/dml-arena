@@ -5,6 +5,7 @@ import { getModelById } from '@/lib/models';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { VotingButtons } from '@/components/VotingButtons';
+import { DebateRoundRating } from '@/components/DebateRoundRating';
 import { MarkdownContent } from '@/components/MarkdownContent';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +37,9 @@ interface DebateProgressProps {
   showVoting?: boolean;
   onVote?: (modelId: string, type: 'up' | 'down') => void;
   getVote?: (modelId: string) => 'up' | 'down' | null;
+  showRating?: boolean;
+  onRate?: (modelId: string, round: number, rating: number) => void;
+  getRating?: (modelId: string, round: number) => number | null;
 }
 
 export function DebateProgress({ 
@@ -47,7 +51,10 @@ export function DebateProgress({
   onSave,
   showVoting = false,
   onVote,
-  getVote
+  getVote,
+  showRating = false,
+  onRate,
+  getRating
 }: DebateProgressProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -211,7 +218,7 @@ export function DebateProgress({
                             transition={{ delay: idx * 0.1 }}
                             className="p-4"
                           >
-                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
                                 <div className={cn(
                                   "w-2 h-2 rounded-full",
@@ -219,12 +226,21 @@ export function DebateProgress({
                                 )} />
                                 <span className="text-xs font-medium">{model?.name || response.model}</span>
                               </div>
-                              {showVoting && onVote && getVote && (
-                                <VotingButtons
-                                  currentVote={getVote(response.model)}
-                                  onVote={(type) => onVote(response.model, type)}
-                                />
-                              )}
+                              <div className="flex items-center gap-2">
+                                {showRating && onRate && getRating && (
+                                  <DebateRoundRating
+                                    modelId={response.model}
+                                    rating={getRating(response.model, response.round)}
+                                    onRate={(rating) => onRate(response.model, response.round, rating)}
+                                  />
+                                )}
+                                {showVoting && onVote && getVote && (
+                                  <VotingButtons
+                                    currentVote={getVote(response.model)}
+                                    onVote={(type) => onVote(response.model, type)}
+                                  />
+                                )}
+                              </div>
                             </div>
                             <div className="text-sm text-muted-foreground line-clamp-3">
                               <MarkdownContent content={response.response} />
