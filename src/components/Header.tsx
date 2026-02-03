@@ -80,7 +80,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
               </Badge>
             )}
             <span className="text-xs text-muted-foreground hidden xl:block">
-              7 AI Models • Real-time Comparison
+              55+ AI Models • Real-time Comparison
             </span>
             
             {/* Desktop Navigation Links - Hidden on mobile */}

@@ -187,7 +187,7 @@ export function ApiKeysSettings() {
       <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
         <div className="flex items-start gap-2">
           <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <div className="text-xs text-primary-foreground/80">
+          <div className="text-xs text-foreground/80">
             <strong className="text-primary">User Key Priority:</strong> When you add your own API key, it will be used instead of the system key. This gives you full control over your API usage and costs.
           </div>
         </div>
