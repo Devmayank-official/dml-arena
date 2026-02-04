@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ['favicon.ico', 'icons/*.png', 'robots.txt'],
       manifest: false, // We use our own manifest.json
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB limit for large bundles
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {
