@@ -288,17 +288,17 @@ export default function Settings() {
                     {/* Usage Progress */}
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Monthly Queries</span>
+                        <span className="text-muted-foreground">Monthly Credits</span>
                         <span className="font-medium">
-                          {subscription?.monthly_usage || 0} / {FREE_PLAN_LIMITS.monthlyQueries}
+                          {subscription?.monthly_usage || 0} / {FREE_PLAN_LIMITS.perMonth}
                         </span>
                       </div>
                       <Progress 
-                        value={((subscription?.monthly_usage || 0) / FREE_PLAN_LIMITS.monthlyQueries) * 100} 
+                        value={((subscription?.monthly_usage || 0) / FREE_PLAN_LIMITS.perMonth) * 100} 
                         className="h-2"
                       />
                       <p className="text-xs text-muted-foreground">
-                        {remainingQueries} queries remaining this month
+                        {remainingQueries} credits remaining this month
                       </p>
                     </div>
 

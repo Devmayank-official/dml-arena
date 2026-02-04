@@ -6,6 +6,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limits by plan
+const RATE_LIMITS = {
+  free: {
+    perMinute: 2,
+    perHour: 5,
+    perDay: 5,
+    perMonth: 5,
+  },
+  pro: {
+    perMinute: 10,
+    perHour: 100,
+    perDay: 300,
+    perMonth: 1000,
+  },
+};
+
+// Time windows in seconds
+const TIME_WINDOWS = {
+  perMinute: 60,
+  perHour: 60 * 60,
+  perDay: 60 * 60 * 24,
+  perMonth: 60 * 60 * 24 * 30,
+};
+
+interface RateLimitResult {
+  window: string;
+  usage: number;
+  limit: number;
+  remaining: number;
+  resetAt: string;
+  exceeded: boolean;
+}
+
+interface RateLimitResponse {
+  success: boolean;
+  plan: string;
+  limits: RateLimitResult[];
+  error?: string;
+  exceededWindow?: string;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -37,7 +78,7 @@ serve(async (req) => {
       );
     }
 
-    // Use service role to update subscription (bypasses RLS for increment)
+    // Use service role to access data (bypasses RLS for reads)
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
@@ -56,99 +97,118 @@ serve(async (req) => {
       );
     }
 
-    // Pro users don't need usage tracking
-    if (subscription.plan === 'pro') {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          plan: 'pro',
-          message: 'Pro users have unlimited queries'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if usage needs reset (monthly reset)
-    const resetDate = new Date(subscription.usage_reset_at);
+    const plan = subscription.plan as 'free' | 'pro';
+    const limits = RATE_LIMITS[plan];
     const now = new Date();
-    
-    let currentUsage = subscription.monthly_usage;
-    
-    if (now >= resetDate) {
-      // Reset usage and set next reset date
-      const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      
-      const { error: resetError } = await adminClient
-        .from('subscriptions')
-        .update({ 
-          monthly_usage: 1, 
-          usage_reset_at: nextReset.toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
 
-      if (resetError) {
-        console.error('Error resetting usage:', resetError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to reset usage' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // Check all rate limit windows
+    const rateLimitResults: RateLimitResult[] = [];
+    let exceededWindow: string | null = null;
+
+    for (const [windowName, seconds] of Object.entries(TIME_WINDOWS)) {
+      const windowStart = new Date(now.getTime() - seconds * 1000);
+      
+      // Count usage in this window
+      const { count, error: countError } = await adminClient
+        .from('usage_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', windowStart.toISOString());
+
+      if (countError) {
+        console.error(`Error counting usage for ${windowName}:`, countError);
+        continue;
       }
 
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          plan: 'free',
-          usage: 1,
-          limit: 5,
-          remaining: 4,
-          wasReset: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const usage = count || 0;
+      const limit = limits[windowName as keyof typeof limits];
+      const remaining = Math.max(0, limit - usage);
+      const exceeded = usage >= limit;
+
+      // Calculate reset time
+      let resetAt: Date;
+      if (windowName === 'perMinute') {
+        resetAt = new Date(now.getTime() + (60 - (now.getSeconds())) * 1000);
+      } else if (windowName === 'perHour') {
+        resetAt = new Date(now.getTime() + (60 - now.getMinutes()) * 60 * 1000);
+      } else if (windowName === 'perDay') {
+        resetAt = new Date(now);
+        resetAt.setHours(24, 0, 0, 0);
+      } else {
+        // Per month - next month start
+        resetAt = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      }
+
+      rateLimitResults.push({
+        window: windowName,
+        usage,
+        limit,
+        remaining,
+        resetAt: resetAt.toISOString(),
+        exceeded,
+      });
+
+      if (exceeded && !exceededWindow) {
+        exceededWindow = windowName;
+      }
     }
 
-    // Check if user has reached limit
-    const FREE_LIMIT = 5;
-    if (currentUsage >= FREE_LIMIT) {
+    // If any limit is exceeded, return 429
+    if (exceededWindow) {
+      const response: RateLimitResponse = {
+        success: false,
+        plan,
+        limits: rateLimitResults,
+        error: getErrorMessage(exceededWindow, rateLimitResults.find(r => r.window === exceededWindow)!),
+        exceededWindow,
+      };
+
       return new Response(
-        JSON.stringify({ 
-          error: 'Usage limit reached',
-          plan: 'free',
-          usage: currentUsage,
-          limit: FREE_LIMIT,
-          remaining: 0
-        }),
+        JSON.stringify(response),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Increment usage
-    const newUsage = currentUsage + 1;
-    const { error: updateError } = await adminClient
-      .from('subscriptions')
-      .update({ 
-        monthly_usage: newUsage,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id);
+    // Insert usage log
+    const { error: insertError } = await adminClient
+      .from('usage_logs')
+      .insert({
+        user_id: user.id,
+        action_type: 'comparison',
+      });
 
-    if (updateError) {
-      console.error('Error updating usage:', updateError);
+    if (insertError) {
+      console.error('Error inserting usage log:', insertError);
       return new Response(
-        JSON.stringify({ error: 'Failed to update usage' }),
+        JSON.stringify({ error: 'Failed to track usage' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Update the usage counts after insertion
+    const updatedResults = rateLimitResults.map(r => ({
+      ...r,
+      usage: r.usage + 1,
+      remaining: Math.max(0, r.remaining - 1),
+    }));
+
+    // Also update the legacy monthly_usage in subscriptions table for backward compatibility
+    await adminClient
+      .from('subscriptions')
+      .update({ 
+        monthly_usage: updatedResults.find(r => r.window === 'perMonth')?.usage || 0,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
+
+    const response: RateLimitResponse = {
+      success: true,
+      plan,
+      limits: updatedResults,
+    };
+
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        plan: 'free',
-        usage: newUsage,
-        limit: FREE_LIMIT,
-        remaining: FREE_LIMIT - newUsage
-      }),
+      JSON.stringify(response),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -160,3 +220,24 @@ serve(async (req) => {
     );
   }
 });
+
+function getErrorMessage(window: string, result: RateLimitResult): string {
+  const resetTime = new Date(result.resetAt);
+  const now = new Date();
+  const diffMs = resetTime.getTime() - now.getTime();
+  const diffSeconds = Math.ceil(diffMs / 1000);
+  const diffMinutes = Math.ceil(diffMs / (1000 * 60));
+
+  switch (window) {
+    case 'perMinute':
+      return `Slow down! You've made too many requests. Try again in ${diffSeconds} seconds.`;
+    case 'perHour':
+      return `Hourly limit reached. Resets in ${diffMinutes} minutes.`;
+    case 'perDay':
+      return `Daily limit reached. Resets at midnight.`;
+    case 'perMonth':
+      return `Monthly limit reached. Upgrade to Pro for 1000 credits/month.`;
+    default:
+      return 'Rate limit exceeded.';
+  }
+}

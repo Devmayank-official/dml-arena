@@ -33,7 +33,10 @@ const Pricing = () => {
   };
 
   const features = [
-    { name: "Monthly Queries", free: "5", pro: "Unlimited" },
+    { name: "Monthly Credits", free: "5", pro: "1,000" },
+    { name: "Per Minute Limit", free: "2", pro: "10" },
+    { name: "Per Hour Limit", free: "5", pro: "100" },
+    { name: "Per Day Limit", free: "5", pro: "300" },
     { name: "GPT-5 Nano", free: true, pro: true },
     { name: "Gemini Flash Lite", free: true, pro: true },
     { name: "GPT-5", free: false, pro: true },
@@ -52,8 +55,12 @@ const Pricing = () => {
 
   const faqs = [
     {
-      question: "What happens when I reach my free limit?",
-      answer: "Once you've used your 5 free queries for the month, you'll need to wait until the next month for your limit to reset, or upgrade to Pro for unlimited queries."
+      question: "What are the rate limits?",
+      answer: "Free plan: 2 requests per minute, 5 per hour, 5 per day, and 5 per month. Pro plan: 10 per minute, 100 per hour, 300 per day, and 1,000 per month. These limits ensure fair usage and system stability."
+    },
+    {
+      question: "What happens when I hit a rate limit?",
+      answer: "If you hit a per-minute limit, just wait a few seconds. Hourly limits reset within the hour. Daily limits reset at midnight. Monthly limits reset on the 1st of each month. Upgrade to Pro for significantly higher limits!"
     },
     {
       question: "Which AI models are included in the free plan?",
@@ -76,12 +83,8 @@ const Pricing = () => {
       answer: "Yes, your queries and results are private by default. Only you can see your comparison history. If you choose to share a result, it becomes accessible via a unique link - but you control what gets shared."
     },
     {
-      question: "Do queries reset monthly?",
-      answer: "Yes, free plan queries reset at the beginning of each calendar month. Pro users have unlimited queries, so no reset needed!"
-    },
-    {
-      question: "Can I try Pro features before subscribing?",
-      answer: "Currently we don't offer a trial, but the free plan lets you experience the core comparison feature. If you love it, Pro unlocks the full power of AI Arena."
+      question: "Why multiple rate limits?",
+      answer: "Multi-tier rate limiting (per minute, hour, day, month) prevents abuse while giving you flexibility. You can make quick bursts of requests, but sustained heavy usage requires a Pro plan. This keeps the service fast and fair for everyone."
     },
   ];
 
@@ -178,15 +181,15 @@ const Pricing = () => {
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>5 queries per month</span>
+                      <span>5 credits per month</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>GPT-5 Nano model</span>
+                      <span>2 requests per minute</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>Gemini Flash Lite model</span>
+                      <span>GPT-5 Nano & Gemini Flash Lite</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
@@ -228,7 +231,11 @@ const Pricing = () => {
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>Unlimited queries</span>
+                      <span>1,000 credits per month</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-primary shrink-0" />
+                      <span>10 req/min • 100/hr • 300/day</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
@@ -236,11 +243,7 @@ const Pricing = () => {
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>Deep Mode (AI debates)</span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary shrink-0" />
-                      <span>Community, Share & Export</span>
+                      <span>Deep Mode, Share & Export</span>
                     </li>
                   </ul>
                   <Button 
