@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,6 +15,12 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Log auth state changes
+        logger.logAuth(`Auth state changed: ${event}`, {
+          userId: session?.user?.id,
+          email: session?.user?.email,
+        });
       }
     );
 
@@ -30,6 +37,8 @@ export function useAuth() {
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/chat`;
     
+    logger.logAuth('Sign up attempted', { email });
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -37,19 +46,43 @@ export function useAuth() {
         emailRedirectTo: redirectUrl
       }
     });
+    
+    if (error) {
+      logger.error('auth', 'Sign up failed', { email, error: error.message });
+    } else {
+      logger.logAuth('Sign up successful', { email });
+    }
+    
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    logger.logAuth('Sign in attempted', { email });
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (error) {
+      logger.error('auth', 'Sign in failed', { email, error: error.message });
+    } else {
+      logger.logAuth('Sign in successful', { email });
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    logger.logAuth('Sign out initiated');
     const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      logger.error('auth', 'Sign out failed', { error: error.message });
+    } else {
+      logger.logAuth('Sign out successful');
+    }
+    
     return { error };
   };
 

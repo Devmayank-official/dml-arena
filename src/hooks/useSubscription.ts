@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/lib/logger';
 
 export type SubscriptionPlan = 'free' | 'pro';
 
@@ -78,15 +79,20 @@ export const useSubscription = () => {
 
       if (error) {
         console.error('Error fetching subscription:', error);
+        logger.error('subscription', 'Failed to fetch subscription', { error: error.message });
         setSubscription(null);
       } else {
         setSubscription({
           ...data,
           plan: data.plan as SubscriptionPlan,
         });
+        logger.logSubscription('Subscription loaded', data.plan);
       }
     } catch (err) {
       console.error('Error in fetchSubscription:', err);
+      logger.error('subscription', 'Unexpected error fetching subscription', { 
+        error: err instanceof Error ? err.message : 'Unknown error' 
+      });
       setSubscription(null);
     } finally {
       setIsLoading(false);
@@ -155,6 +161,15 @@ export const useSubscription = () => {
         if (data.limits) {
           updateRateLimitsFromResponse(data.limits);
         }
+        
+        // Log rate limit exceeded
+        logger.logRateLimit(
+          data.exceededWindow || 'unknown',
+          data.limits?.[0]?.usage || 0,
+          data.limits?.[0]?.limit || 0,
+          true
+        );
+        
         return { 
           success: false, 
           error: data.error || 'Rate limit exceeded',
@@ -167,8 +182,13 @@ export const useSubscription = () => {
       if (data.limits) {
         updateRateLimitsFromResponse(data.limits);
         
-        // Also update subscription monthly usage
+        // Log successful usage increment
         const monthlyLimit = data.limits.find((l: RateLimitInfo) => l.window === 'perMonth');
+        if (monthlyLimit) {
+          logger.logRateLimit('perMonth', monthlyLimit.usage, monthlyLimit.limit, monthlyLimit.exceeded);
+        }
+        
+        // Also update subscription monthly usage
         if (monthlyLimit) {
           setSubscription(prev => prev ? {
             ...prev,
