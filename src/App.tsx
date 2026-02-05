@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { CommandPalette } from "@/components/CommandPalette";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { logger } from "@/lib/logger";
 import Landing from "./pages/Landing";
 import Pricing from "./pages/Pricing";
 import Index from "./pages/Index";
@@ -28,6 +29,12 @@ import { OfflineIndicator } from "./components/OfflineIndicator";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
+
+// Initialize logger on app start
+logger.info('user_action', 'Application initialized', { 
+  timestamp: new Date().toISOString(),
+  userAgent: navigator.userAgent,
+});
 
 function AppContent() {
   const { shortcuts, isHelpOpen, setIsHelpOpen } = useKeyboardShortcuts();
