@@ -166,21 +166,21 @@ export function MobileNav() {
       {/* Hamburger Button - Modern Design */}
       <motion.button
         whileTap={{ scale: 0.9 }}
-        className="relative h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center md:hidden"
+        className="relative h-10 w-10 rounded-xl bg-primary/80 hover:bg-primary flex items-center justify-center md:hidden transition-colors z-40"
         onClick={() => setIsOpen(true)}
         aria-label="Open menu"
       >
         <div className="flex flex-col gap-1.5">
           <motion.span 
-            className="w-5 h-0.5 bg-foreground rounded-full origin-center"
+            className="w-5 h-0.5 bg-primary-foreground rounded-full origin-center"
             animate={isOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
           />
           <motion.span 
-            className="w-3.5 h-0.5 bg-foreground rounded-full"
+            className="w-3.5 h-0.5 bg-primary-foreground rounded-full"
             animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0 }}
           />
           <motion.span 
-            className="w-5 h-0.5 bg-foreground rounded-full origin-center"
+            className="w-5 h-0.5 bg-primary-foreground rounded-full origin-center"
             animate={isOpen ? { rotate: -45, y: -4 } : { rotate: 0, y: 0 }}
           />
         </div>
