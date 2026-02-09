@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Input validation limits
+const MAX_MESSAGE_LENGTH = 10000;
+const MAX_MODELS_COUNT = 6;
+const MAX_CUSTOM_PERSONA_LENGTH = 1000;
 
 const DEBATE_MODELS = [
   'openai/gpt-5',
@@ -131,6 +137,56 @@ serve(async (req) => {
       };
 
       try {
+        // ========== AUTHENTICATION ==========
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+          sendEvent('error', { message: 'Authentication required' });
+          controller.close();
+          return;
+        }
+
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } }
+        });
+
+        // Verify JWT and get user
+        const token = authHeader.replace('Bearer ', '');
+        const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+        if (claimsError || !claimsData?.claims) {
+          sendEvent('error', { message: 'Invalid authentication token' });
+          controller.close();
+          return;
+        }
+
+        const userId = claimsData.claims.sub as string;
+
+        // ========== SERVER-SIDE PRO PLAN ENFORCEMENT ==========
+        const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const adminClient = createClient(supabaseUrl, serviceRoleKey);
+        
+        const { data: subscription, error: subError } = await adminClient
+          .from('subscriptions')
+          .select('plan')
+          .eq('user_id', userId)
+          .single();
+
+        if (subError || !subscription) {
+          console.error('Error fetching subscription:', subError);
+          sendEvent('error', { message: 'Subscription not found' });
+          controller.close();
+          return;
+        }
+
+        // Deep Mode requires Pro subscription
+        if (subscription.plan !== 'pro') {
+          sendEvent('error', { message: 'Deep Mode requires Pro subscription. Upgrade to Pro to access this feature.' });
+          controller.close();
+          return;
+        }
+
+        // ========== INPUT VALIDATION ==========
         const { 
           message, 
           models: selectedModels, 
@@ -143,11 +199,35 @@ serve(async (req) => {
           synthesizer = 'google/gemini-2.5-pro'
         } = await req.json();
         
-        if (!message) {
+        // Validate message
+        if (!message || typeof message !== 'string') {
           sendEvent('error', { message: 'Message is required' });
           controller.close();
           return;
         }
+
+        const trimmedMessage = message.trim();
+        if (trimmedMessage.length === 0 || trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+          sendEvent('error', { message: `Message must be 1-${MAX_MESSAGE_LENGTH} characters` });
+          controller.close();
+          return;
+        }
+
+        // Validate custom persona
+        if (customPersona && typeof customPersona === 'string' && customPersona.length > MAX_CUSTOM_PERSONA_LENGTH) {
+          sendEvent('error', { message: `Custom persona too long (max ${MAX_CUSTOM_PERSONA_LENGTH} characters)` });
+          controller.close();
+          return;
+        }
+
+        // Validate models
+        if (Array.isArray(selectedModels) && selectedModels.length > MAX_MODELS_COUNT) {
+          sendEvent('error', { message: `Maximum ${MAX_MODELS_COUNT} models allowed for debates` });
+          controller.close();
+          return;
+        }
+
+        console.log(`User ${userId} (pro) starting Deep Mode debate`);
 
         const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
         if (!LOVABLE_API_KEY) {
