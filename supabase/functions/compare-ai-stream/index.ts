@@ -1,9 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Free plan allowed models
+const FREE_PLAN_ALLOWED_MODELS = [
+  'google/gemini-2.5-flash-lite',
+  'openai/gpt-5-nano',
+];
+
+// Input validation limits
+const MAX_MESSAGE_LENGTH = 10000;
+const MAX_MODELS_COUNT = 10;
+const MAX_CONTEXT_MESSAGES = 20;
 
 // Models available with system keys (Lovable AI Gateway supports these)
 const SYSTEM_AVAILABLE_MODELS = [
@@ -401,16 +413,102 @@ serve(async (req) => {
   }
 
   try {
+    // ========== AUTHENTICATION ==========
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify JWT and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // ========== GET SUBSCRIPTION FOR SERVER-SIDE PLAN ENFORCEMENT ==========
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    
+    const { data: subscription, error: subError } = await adminClient
+      .from('subscriptions')
+      .select('plan')
+      .eq('user_id', userId)
+      .single();
+
+    if (subError || !subscription) {
+      console.error('Error fetching subscription:', subError);
+      return new Response(
+        JSON.stringify({ error: 'Subscription not found' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userPlan = subscription.plan as 'free' | 'pro';
+
+    // ========== INPUT VALIDATION ==========
     const { message, models, contextMessages, userApiKeys } = await req.json();
     
+    // Validate message
+    if (!message || typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Message is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const trimmedMessage = message.trim();
+    if (trimmedMessage.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Message cannot be empty' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Message too long (max ${MAX_MESSAGE_LENGTH} characters)` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate models array
+    if (!Array.isArray(models) || models.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'At least one model required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (models.length > MAX_MODELS_COUNT) {
+      return new Response(
+        JSON.stringify({ error: `Maximum ${MAX_MODELS_COUNT} models per request` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate context messages
     const validContextMessages: ContextMessage[] = Array.isArray(contextMessages) 
       ? contextMessages.filter(m => m && typeof m.role === 'string' && typeof m.content === 'string')
       : [];
-    
-    if (!message || typeof message !== 'string') {
+
+    if (validContextMessages.length > MAX_CONTEXT_MESSAGES) {
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({ error: `Maximum ${MAX_CONTEXT_MESSAGES} context messages allowed` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -420,8 +518,26 @@ serve(async (req) => {
       ? userApiKeys 
       : undefined;
 
-    // Determine which models can be used
-    let selectedModels = Array.isArray(models) && models.length > 0 ? models : SYSTEM_AVAILABLE_MODELS;
+    // ========== SERVER-SIDE MODEL ACCESS ENFORCEMENT ==========
+    let selectedModels = models;
+    
+    // Enforce model restrictions for free users (server-side validation)
+    if (userPlan === 'free' && !userKeys?.openrouter) {
+      const unauthorizedModels = selectedModels.filter(
+        (m: string) => !FREE_PLAN_ALLOWED_MODELS.includes(m)
+      );
+      
+      if (unauthorizedModels.length > 0) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Some models require Pro subscription',
+            unauthorized_models: unauthorizedModels,
+            allowed_models: FREE_PLAN_ALLOWED_MODELS
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
     
     // Filter models based on available keys
     const hasUserOpenRouter = !!userKeys?.openrouter;
@@ -430,11 +546,7 @@ serve(async (req) => {
     if (!hasUserOpenRouter && !hasSystemOpenRouter) {
       // Only Lovable gateway available - filter to supported models
       selectedModels = selectedModels.filter((m: string) => SYSTEM_AVAILABLE_MODELS.includes(m));
-    } else if (!hasUserOpenRouter && hasSystemOpenRouter) {
-      // System OpenRouter available - allow all models
-      // No filtering needed
     }
-    // If user has OpenRouter key, allow all models
 
     if (selectedModels.length === 0) {
       return new Response(
@@ -453,6 +565,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`User ${userId} (${userPlan}) requesting ${selectedModels.length} models`);
 
     const keySource = userKeys?.openrouter ? 'OpenRouter (user)' : 
                      Object.values(userKeys || {}).some(Boolean) ? 'User API keys' :
