@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Sparkles, ChevronLeft, HelpCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { motion } from "framer-motion";
+import { PaymentButton } from "@/components/PaymentButton";
+import { BillingCycle } from "@/hooks/useRazorpay";
 import {
   Accordion,
   AccordionContent,
@@ -22,15 +26,21 @@ import {
 
 const Pricing = () => {
   const { user } = useAuth();
+  const { isPro, refetch } = useSubscription();
   const navigate = useNavigate();
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
 
-  const handleGetStarted = (plan: 'free' | 'pro') => {
+  const handleGetStarted = () => {
     if (user) {
       navigate("/chat");
     } else {
       navigate("/auth");
     }
   };
+
+  const monthlyPrice = '₹1,500';
+  const yearlyPrice = '₹15,300';
+  const yearlyMonthly = '₹1,275';
 
   const features = [
     { name: "Monthly Credits", free: "5", pro: "1,000" },
@@ -72,19 +82,19 @@ const Pricing = () => {
     },
     {
       question: "Can I cancel my Pro subscription anytime?",
-      answer: "Yes! You can cancel anytime. Your Pro features will remain active until the end of your billing period, then you'll automatically switch to the free plan."
+      answer: "Yes! You can cancel anytime from Settings. Your Pro features will remain active until the end of your billing period, then you'll automatically switch to the free plan."
     },
     {
-      question: "What export formats are available?",
-      answer: "Pro users can export comparisons in 11 formats: PDF, JSON, YAML, XML, Markdown, Plain Text, TOML, Python, JavaScript, CSV, and SQLite. Perfect for documentation, reports, or integrating results into your workflow."
+      question: "What's the difference between Monthly and Yearly billing?",
+      answer: "Yearly billing saves you 15%! Monthly is ₹1,500/month. Yearly is ₹15,300/year (effectively ₹1,275/month). Both plans include the same 1,000 credits/month and all Pro features."
+    },
+    {
+      question: "What payment methods are accepted?",
+      answer: "We accept all major payment methods through Razorpay: Credit/Debit Cards (Visa, Mastercard, RuPay), UPI, Net Banking, and Wallets. All payments are securely processed."
     },
     {
       question: "Is my data private?",
       answer: "Yes, your queries and results are private by default. Only you can see your comparison history. If you choose to share a result, it becomes accessible via a unique link - but you control what gets shared."
-    },
-    {
-      question: "Why multiple rate limits?",
-      answer: "Multi-tier rate limiting (per minute, hour, day, month) prevents abuse while giving you flexibility. You can make quick bursts of requests, but sustained heavy usage requires a Pro plan. This keeps the service fast and fair for everyone."
     },
   ];
 
@@ -151,9 +161,36 @@ const Pricing = () => {
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Simple, <span className="gradient-text">Transparent</span> Pricing
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
               Start free, upgrade when you need more power. No hidden fees.
             </p>
+
+            {/* Billing Cycle Toggle */}
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  billingCycle === 'monthly'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  billingCycle === 'yearly'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Yearly
+                <Badge className="ml-2 bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                  Save 15%
+                </Badge>
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -173,7 +210,7 @@ const Pricing = () => {
                   <CardTitle className="text-2xl">Free</CardTitle>
                   <CardDescription>Perfect for trying out AI Arena</CardDescription>
                   <div className="mt-4">
-                    <span className="text-5xl font-bold">$0</span>
+                    <span className="text-5xl font-bold">₹0</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                 </CardHeader>
@@ -199,7 +236,7 @@ const Pricing = () => {
                   <Button 
                     className="w-full" 
                     variant="outline"
-                    onClick={() => handleGetStarted('free')}
+                    onClick={handleGetStarted}
                   >
                     Get Started Free
                   </Button>
@@ -223,8 +260,21 @@ const Pricing = () => {
                   <CardTitle className="text-2xl gradient-text">Pro</CardTitle>
                   <CardDescription>For power users who need more</CardDescription>
                   <div className="mt-4">
-                    <span className="text-5xl font-bold">$15</span>
-                    <span className="text-muted-foreground">/month</span>
+                    {billingCycle === 'yearly' ? (
+                      <>
+                        <span className="text-5xl font-bold">{yearlyMonthly}</span>
+                        <span className="text-muted-foreground">/month</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-muted-foreground line-through mr-2">₹18,000/yr</span>
+                          <span className="text-sm text-green-400 font-medium">{yearlyPrice}/yr</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-bold">{monthlyPrice}</span>
+                        <span className="text-muted-foreground">/month</span>
+                      </>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -246,13 +296,26 @@ const Pricing = () => {
                       <span>Deep Mode, Share & Export</span>
                     </li>
                   </ul>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => handleGetStarted('pro')}
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Upgrade to Pro
-                  </Button>
+                  {isPro ? (
+                    <Button className="w-full" variant="outline" disabled>
+                      Current Plan
+                    </Button>
+                  ) : user ? (
+                    <PaymentButton
+                      billingCycle={billingCycle}
+                      onSuccess={() => refetch()}
+                      className="w-full"
+                      size="default"
+                    />
+                  ) : (
+                    <Button 
+                      className="w-full" 
+                      onClick={() => navigate("/auth")}
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Sign Up to Upgrade
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -354,14 +417,24 @@ const Pricing = () => {
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">
             Join thousands comparing AI models every day
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => handleGetStarted('pro')}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Upgrade to Pro
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => handleGetStarted('free')}>
-              Start Free
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {user && !isPro ? (
+              <PaymentButton
+                billingCycle={billingCycle}
+                onSuccess={() => refetch()}
+                size="lg"
+              />
+            ) : (
+              <Button size="lg" onClick={handleGetStarted}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isPro ? 'Go to Chat' : 'Upgrade to Pro'}
+              </Button>
+            )}
+            {!user && (
+              <Button size="lg" variant="outline" onClick={handleGetStarted}>
+                Start Free
+              </Button>
+            )}
           </div>
         </div>
       </section>

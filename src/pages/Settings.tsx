@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Settings as SettingsIcon, 
@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AI_MODELS } from '@/lib/models';
 import { ApiKeysSettings } from '@/components/ApiKeysSettings';
+import { useRazorpay } from '@/hooks/useRazorpay';
 import {
   Select,
   SelectContent,
@@ -57,7 +58,9 @@ export default function Settings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { settings, updateSettings } = useSettings();
-  const { subscription, isPro, remainingQueries, isLoading: subscriptionLoading } = useSubscription();
+  const { subscription, isPro, remainingQueries, isLoading: subscriptionLoading, refetch: refetchSubscription } = useSubscription();
+  const { cancelSubscription } = useRazorpay();
+  const [isCancelling, setIsCancelling] = useState(false);
   
   const [isExporting, setIsExporting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -234,15 +237,17 @@ export default function Settings() {
                     <div className="flex items-center gap-2 mb-2">
                       <Crown className="h-5 w-5 text-yellow-500" />
                       <span className="font-semibold">Pro Plan</span>
-                      <span className="text-muted-foreground">$15/month</span>
+                      <span className="text-muted-foreground">
+                        {(subscription as any)?.billing_cycle === 'yearly' ? '₹15,300/yr' : '₹1,500/mo'}
+                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Unlimited queries, all 55+ AI models, Deep Mode, Community access, and more.
+                      1,000 credits/month, all 55+ AI models, Deep Mode, Community access, and more.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="gap-1">
                         <Zap className="h-3 w-3" />
-                        Unlimited Queries
+                        1,000 Credits/mo
                       </Badge>
                       <Badge variant="secondary" className="gap-1">
                         <Layers className="h-3 w-3" />
@@ -255,24 +260,47 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {subscription?.usage_reset_at && (
+                  {(subscription as any)?.subscription_end && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        Next billing cycle: {new Date(subscription.usage_reset_at).toLocaleDateString()}
+                        {(subscription as any)?.cancelled_at 
+                          ? `Pro until: ${new Date((subscription as any).subscription_end).toLocaleDateString()}`
+                          : `Next billing: ${new Date((subscription as any).subscription_end).toLocaleDateString()}`
+                        }
                       </span>
                     </div>
                   )}
 
-                  <div className="pt-2 border-t border-border">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Need to cancel or manage billing?
-                    </p>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      Manage Subscription
-                      <ArrowUpRight className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  {(subscription as any)?.cancelled_at ? (
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm">
+                      Subscription cancelled. Pro features remain active until the end of your billing period.
+                    </div>
+                  ) : (
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Need to cancel your subscription?
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2"
+                        disabled={isCancelling}
+                        onClick={async () => {
+                          setIsCancelling(true);
+                          await cancelSubscription();
+                          await refetchSubscription();
+                          setIsCancelling(false);
+                        }}
+                      >
+                        {isCancelling ? (
+                          <><Loader2 className="h-3 w-3 animate-spin" /> Cancelling...</>
+                        ) : (
+                          <>Cancel Subscription</>
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
