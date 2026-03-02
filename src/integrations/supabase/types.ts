@@ -151,6 +151,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          billing_cycle: string | null
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_subscription_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_cycle?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -273,28 +318,43 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: string | null
+          cancelled_at: string | null
           created_at: string
           id: string
           monthly_usage: number
           plan: Database["public"]["Enums"]["subscription_plan"]
+          razorpay_subscription_id: string | null
+          subscription_end: string | null
+          subscription_start: string | null
           updated_at: string
           usage_reset_at: string
           user_id: string
         }
         Insert: {
+          billing_cycle?: string | null
+          cancelled_at?: string | null
           created_at?: string
           id?: string
           monthly_usage?: number
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          razorpay_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
           updated_at?: string
           usage_reset_at?: string
           user_id: string
         }
         Update: {
+          billing_cycle?: string | null
+          cancelled_at?: string | null
           created_at?: string
           id?: string
           monthly_usage?: number
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          razorpay_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
           updated_at?: string
           usage_reset_at?: string
           user_id?: string
