@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Pricing configuration (amounts in paise for INR)
 const PRICING = {
-  monthly: { amount: 150000, currency: 'INR', description: 'AI Arena Pro - Monthly' }, // ₹1500
-  yearly: { amount: 1530000, currency: 'INR', description: 'AI Arena Pro - Yearly (15% off)' }, // ₹15300 (₹1500*12 = ₹18000, 15% off = ₹15300)
+  monthly: { amount: 150000, currency: 'INR', description: 'DML Arena Pro - Monthly' }, // ₹1500
+  yearly: { amount: 1530000, currency: 'INR', description: 'DML Arena Pro - Yearly (15% off)' }, // ₹15300 (₹1500*12 = ₹18000, 15% off = ₹15300)
 };
 
 serve(async (req) => {

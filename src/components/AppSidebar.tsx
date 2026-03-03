@@ -101,7 +101,7 @@ export function AppSidebar() {
             <span className="text-sm font-bold text-primary-foreground">AI</span>
           </div>
           <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sm gradient-text">CompareAI</span>
+            <span className="font-semibold text-sm gradient-text">DML Arena</span>
             <span className="text-[10px] text-muted-foreground">Navigation</span>
           </div>
         </div>

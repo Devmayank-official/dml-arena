@@ -52,7 +52,7 @@ const BUILT_IN_PRESETS: ModelPreset[] = [
   },
 ];
 
-const STORAGE_KEY = 'compareai-model-presets';
+const STORAGE_KEY = 'dmlarena-model-presets';
 
 export function useModelPresets() {
   const [customPresets, setCustomPresets] = useState<ModelPreset[]>([]);

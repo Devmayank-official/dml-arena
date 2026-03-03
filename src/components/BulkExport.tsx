@@ -79,7 +79,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    downloadBlob(blob, `compareai-history-${new Date().toISOString().split('T')[0]}.json`);
+    downloadBlob(blob, `dmlarena-history-${new Date().toISOString().split('T')[0]}.json`);
     
     toast({
       title: 'Export complete',
@@ -121,7 +121,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
     });
 
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-    downloadBlob(blob, `compareai-history-${new Date().toISOString().split('T')[0]}.csv`);
+    downloadBlob(blob, `dmlarena-history-${new Date().toISOString().split('T')[0]}.csv`);
     
     toast({
       title: 'Export complete',
@@ -131,7 +131,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
 
   const exportAsMarkdown = () => {
     const lines: string[] = [
-      '# CompareAI History Export',
+      '# DML Arena History Export',
       '',
       `**Exported:** ${new Date().toLocaleString()}`,
       '',
@@ -193,7 +193,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
     }
 
     const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-    downloadBlob(blob, `compareai-history-${new Date().toISOString().split('T')[0]}.md`);
+    downloadBlob(blob, `dmlarena-history-${new Date().toISOString().split('T')[0]}.md`);
     
     toast({
       title: 'Export complete',

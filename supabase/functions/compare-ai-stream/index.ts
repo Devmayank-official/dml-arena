@@ -270,8 +270,8 @@ async function streamModel(
     
     if (provider === 'openrouter' || provider === 'openrouter-system') {
       headers["Authorization"] = `Bearer ${apiKey}`;
-      headers["HTTP-Referer"] = "https://compareai.app";
-      headers["X-Title"] = "CompareAI";
+      headers["HTTP-Referer"] = "https://dmlarena.app";
+      headers["X-Title"] = "DML Arena";
     } else if (provider === 'anthropic') {
       headers["x-api-key"] = apiKey;
       headers["anthropic-version"] = "2023-06-01";

@@ -128,7 +128,7 @@ const Pricing = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold gradient-text">AI Arena</span>
+              <span className="text-xl font-bold gradient-text">DML Arena</span>
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ const Pricing = () => {
               <Card className="bg-card/50 border-border/50 backdrop-blur-sm h-full">
                 <CardHeader>
                   <CardTitle className="text-2xl">Free</CardTitle>
-                  <CardDescription>Perfect for trying out AI Arena</CardDescription>
+                  <CardDescription>Perfect for trying out DML Arena</CardDescription>
                   <div className="mt-4">
                     <span className="text-5xl font-bold">₹0</span>
                     <span className="text-muted-foreground">/month</span>
@@ -442,7 +442,7 @@ const Pricing = () => {
       {/* Footer */}
       <footer className="relative z-10 border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          © 2026 AI Arena. All rights reserved.
+          © 2026 DML Arena. All rights reserved.
         </div>
       </footer>
     </div>

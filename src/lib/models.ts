@@ -794,7 +794,7 @@ export const PROVIDER_INFO: Record<ModelProvider, { name: string; color: string 
 };
 
 // Storage key for API keys - must match ApiKeysSettings
-const API_KEYS_STORAGE_KEY = 'compareai-api-keys';
+const API_KEYS_STORAGE_KEY = 'dmlarena-api-keys';
 
 export const getStoredApiKeys = (): Record<string, string> => {
   try {
