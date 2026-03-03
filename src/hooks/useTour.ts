@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 
-const TOUR_STORAGE_KEY = 'compareai-tour-completed';
+const TOUR_STORAGE_KEY = 'dmlarena-tour-completed';
 
 export interface TourStep {
   id: string;
@@ -15,7 +15,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     target: '[data-tour="logo"]',
-    title: 'Welcome to CompareAI',
+    title: 'Welcome to DML Arena',
     description: 'Compare responses from multiple AI models side-by-side. Ask once, see how different AI models think.',
     position: 'bottom',
   },

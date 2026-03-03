@@ -233,7 +233,7 @@ export function MobileNav() {
                           </div>
                         </div>
                         <div>
-                          <h2 className="text-lg font-bold gradient-text">CompareAI</h2>
+                          <h2 className="text-lg font-bold gradient-text">DML Arena</h2>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                             55+ AI Models
                           </p>

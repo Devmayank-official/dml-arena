@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   autoSaveHistory: true,
 };
 
-const STORAGE_KEY = 'compareai-settings';
+const STORAGE_KEY = 'dmlarena-settings';
 
 export function useSettings() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);

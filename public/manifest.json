@@ -1,6 +1,6 @@
 {
-  "name": "CompareAI",
-  "short_name": "CompareAI",
+  "name": "DML Arena",
+  "short_name": "DML Arena",
   "description": "Compare multiple AI models side by side with real-time streaming responses",
   "start_url": "/",
   "display": "standalone",

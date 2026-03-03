@@ -1,4 +1,4 @@
-# AI Arena - Product Requirements Document (PRD)
+# DML Arena - Product Requirements Document (PRD)
 
 ## Version 2.0 | February 2026
 
@@ -7,7 +7,7 @@
 ## 1. Executive Summary
 
 ### 1.1 Product Vision
-AI Arena is a professional-grade AI model comparison platform that enables users to query multiple large language models (LLMs) simultaneously, compare their responses side-by-side, and determine which model performs best for specific use cases. The platform features real-time streaming responses, multi-round AI debates ("Deep Mode"), comprehensive export capabilities, and a community-driven leaderboard system.
+DML Arena is a professional-grade AI model comparison platform that enables users to query multiple large language models (LLMs) simultaneously, compare their responses side-by-side, and determine which model performs best for specific use cases. The platform features real-time streaming responses, multi-round AI debates ("Deep Mode"), comprehensive export capabilities, and a community-driven leaderboard system.
 
 ### 1.2 Target Users
 - AI researchers and developers evaluating model performance
@@ -741,8 +741,8 @@ All tables have RLS policies:
 ### 8.2 Manifest Configuration
 ```json
 {
-  "name": "AI Arena",
-  "short_name": "AI Arena",
+  "name": "DML Arena",
+  "short_name": "DML Arena",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#000000",

@@ -61,7 +61,7 @@ export default function Install() {
     {
       icon: Zap,
       title: 'Quick Access',
-      description: 'Launch CompareAI instantly from your home screen',
+      description: 'Launch DML Arena instantly from your home screen',
     },
     {
       icon: Wifi,
@@ -91,7 +91,7 @@ export default function Install() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent mb-4">
             <Smartphone className="h-10 w-10 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Install CompareAI</h1>
+          <h1 className="text-3xl font-bold gradient-text mb-2">Install DML Arena</h1>
           <p className="text-muted-foreground">
             Get the full app experience on your device
           </p>
@@ -105,7 +105,7 @@ export default function Install() {
               </div>
               <h2 className="text-xl font-semibold mb-2">Already Installed!</h2>
               <p className="text-muted-foreground">
-                CompareAI is installed on your device. Look for it on your home screen.
+                DML Arena is installed on your device. Look for it on your home screen.
               </p>
             </CardContent>
           </Card>
@@ -156,7 +156,7 @@ export default function Install() {
                 <div className="text-center text-muted-foreground">
                   <p>
                     Your browser supports app installation. Use the browser menu 
-                    to install CompareAI on your device.
+                    to install DML Arena on your device.
                   </p>
                 </div>
               )}

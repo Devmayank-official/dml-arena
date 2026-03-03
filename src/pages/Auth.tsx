@@ -162,7 +162,7 @@ export default function Auth() {
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-bold gradient-text">CompareAI</h1>
+              <h1 className="text-xl font-bold gradient-text">DML Arena</h1>
               <p className="text-xs text-muted-foreground">Multi-Model AI Comparison</p>
             </div>
           </Link>

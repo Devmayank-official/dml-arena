@@ -61,7 +61,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
                 </div>
               </div>
               <div className="min-w-0 hidden xs:block">
-                <h1 className="text-lg sm:text-xl font-bold gradient-text truncate">CompareAI</h1>
+                <h1 className="text-lg sm:text-xl font-bold gradient-text truncate">DML Arena</h1>
                 <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Multi-Model AI Comparison</p>
               </div>
             </Link>

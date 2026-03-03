@@ -10,7 +10,7 @@ export interface PinnedResponse {
   pinnedAt: string;
 }
 
-const STORAGE_KEY = 'compareai-pinned-responses';
+const STORAGE_KEY = 'dmlarena-pinned-responses';
 
 function getStoredPinned(): PinnedResponse[] {
   try {

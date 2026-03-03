@@ -77,7 +77,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
 ];
 
-const STORAGE_KEY = 'compareai-api-keys';
+const STORAGE_KEY = 'dmlarena-api-keys';
 
 function getStoredApiKeys(): ApiKeyConfig {
   try {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const CACHE_PREFIX = 'compareai-offline-';
+const CACHE_PREFIX = 'dmlarena-offline-';
 const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface CachedData<T> {

@@ -93,7 +93,7 @@ export function PWAInstallPrompt() {
             </div>
             
             <div className="flex-1">
-              <h3 className="font-semibold text-sm">Install CompareAI</h3>
+              <h3 className="font-semibold text-sm">Install DML Arena</h3>
               <p className="text-xs text-muted-foreground mt-1">
                 {isIOS 
                   ? 'Tap Share, then "Add to Home Screen" for the best experience'

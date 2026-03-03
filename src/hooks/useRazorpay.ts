@@ -105,7 +105,7 @@ export const useRazorpay = () => {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'AI Arena',
+        name: 'DML Arena',
         description: orderData.description,
         order_id: orderData.orderId,
         handler: async (paymentResponse: RazorpayPaymentResponse) => {
