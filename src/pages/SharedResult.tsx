@@ -294,7 +294,7 @@ export default function SharedResult() {
         <section className="text-center py-8">
           <div className="max-w-md mx-auto">
             <p className="text-muted-foreground mb-4">
-              Want to compare AI models yourself?
+              Want to try DML Arena yourself?
             </p>
             <Link to="/">
               <Button size="lg" className="gap-2">

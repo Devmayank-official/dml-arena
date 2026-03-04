@@ -84,7 +84,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={disabled ? "Select at least one model to start" : isListening ? "Listening..." : "Ask anything to compare AI responses..."}
+            placeholder={disabled ? "Select at least one model to start" : isListening ? "Listening..." : "Ask anything to compare responses..."}
             disabled={isLoading || disabled}
             rows={1}
             className={cn(

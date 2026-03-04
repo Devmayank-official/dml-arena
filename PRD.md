@@ -66,7 +66,7 @@ DML Arena is a professional-grade AI model comparison platform that enables user
          |
 +----------------------------------+
 |       Edge Functions             |
-| - compare-ai-stream              |
+| - compare-ai-stream (DML Arena)  |
 | - deep-debate                    |
 | - track-usage                    |
 | - compare-ai (legacy)            |
