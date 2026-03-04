@@ -144,7 +144,7 @@ export const useSubscription = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-usage`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dml-track-usage`,
         {
           method: 'POST',
           headers: {

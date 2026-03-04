@@ -53,7 +53,7 @@ export function useDeepDebate() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deep-debate`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dml-debate`,
         {
           method: 'POST',
           headers: {
