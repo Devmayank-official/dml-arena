@@ -59,7 +59,7 @@ export function useStreamingComparison() {
         : undefined;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compare-ai-stream`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dml-arena-stream`,
         {
           method: 'POST',
           headers: {
