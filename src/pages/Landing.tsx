@@ -86,7 +86,7 @@ const Landing = () => {
           >
             <Badge variant="secondary" className="mb-6">
               <Sparkles className="w-3 h-3 mr-1" />
-              Compare AI Models Side by Side
+              DML Arena — AI Models Side by Side
             </Badge>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
               <span className="gradient-text">Battle of the</span>
