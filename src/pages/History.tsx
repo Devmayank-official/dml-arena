@@ -32,7 +32,7 @@ import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { BulkExport } from '@/components/BulkExport';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { getModelById, AI_MODELS } from '@/lib/models';
+import { getModelById, ALL_MODELS, PROVIDER_INFO, type ModelProvider } from '@/lib/models';
 import {
   Select,
   SelectContent,
@@ -357,7 +357,7 @@ export default function History() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-64 p-3" align="end">
-                  <div className="space-y-3">
+                    <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Filter by Model</span>
                       {selectedModels.length > 0 && (
@@ -371,18 +371,52 @@ export default function History() {
                         </Button>
                       )}
                     </div>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {AI_MODELS.map(model => (
-                        <label 
-                          key={model.id} 
-                          className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1.5 rounded-md"
-                        >
-                          <Checkbox
-                            checked={selectedModels.includes(model.id)}
-                            onCheckedChange={() => toggleModelFilter(model.id)}
-                          />
-                          <span className="text-sm">{model.name}</span>
-                        </label>
+                    <Input 
+                      placeholder="Search models..." 
+                      className="h-8 text-sm"
+                      onChange={(e) => {
+                        const search = e.target.value.toLowerCase();
+                        document.querySelectorAll('[data-history-model-item]').forEach((el) => {
+                          const name = el.getAttribute('data-model-name')?.toLowerCase() || '';
+                          (el as HTMLElement).style.display = name.includes(search) ? '' : 'none';
+                        });
+                        document.querySelectorAll('[data-history-provider-group]').forEach((el) => {
+                          const items = el.querySelectorAll('[data-history-model-item]');
+                          const anyVisible = Array.from(items).some(item => (item as HTMLElement).style.display !== 'none');
+                          (el as HTMLElement).style.display = anyVisible ? '' : 'none';
+                        });
+                      }}
+                    />
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                      {Object.entries(
+                        ALL_MODELS.reduce((groups, model) => {
+                          const provider = model.provider;
+                          if (!groups[provider]) groups[provider] = [];
+                          groups[provider].push(model);
+                          return groups;
+                        }, {} as Record<string, typeof ALL_MODELS>)
+                      ).map(([provider, models]) => (
+                        <div key={provider} data-history-provider-group>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                            {PROVIDER_INFO[provider as ModelProvider]?.name || provider}
+                          </p>
+                          <div className="space-y-1">
+                            {models.map(model => (
+                              <label 
+                                key={model.id}
+                                data-history-model-item
+                                data-model-name={model.name}
+                                className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1.5 rounded-md"
+                              >
+                                <Checkbox
+                                  checked={selectedModels.includes(model.id)}
+                                  onCheckedChange={() => toggleModelFilter(model.id)}
+                                />
+                                <span className="text-sm">{model.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

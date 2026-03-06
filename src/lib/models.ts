@@ -819,12 +819,15 @@ export const hasSystemOpenRouterKey = (): boolean => {
   return true;
 };
 
+// Combined list of all models (base + OpenRouter)
+export const ALL_MODELS: AIModel[] = [...AI_MODELS, ...OPENROUTER_MODELS];
+
 export const getModelById = (id: string): AIModel | undefined => {
-  return [...AI_MODELS, ...OPENROUTER_MODELS].find(model => model.id === id);
+  return ALL_MODELS.find(model => model.id === id);
 };
 
 export const getModelsByProvider = (provider: ModelProvider): AIModel[] => {
-  return [...AI_MODELS, ...OPENROUTER_MODELS].filter(model => model.provider === provider);
+  return ALL_MODELS.filter(model => model.provider === provider);
 };
 
 export const getModelsByCapability = (capability: ModelCapability, models: AIModel[]): AIModel[] => {

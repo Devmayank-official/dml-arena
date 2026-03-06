@@ -9,7 +9,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { AI_MODELS } from '@/lib/models';
+import { ALL_MODELS, PROVIDER_INFO } from '@/lib/models';
 import { useState } from 'react';
 
 interface QuickReRunProps {
@@ -69,7 +69,7 @@ export function QuickReRun({ lastQuery, lastModels, onReRun, disabled }: QuickRe
           Select different models
         </DropdownMenuLabel>
         
-        {AI_MODELS.map((model) => (
+        {ALL_MODELS.map((model) => (
           <DropdownMenuCheckboxItem
             key={model.id}
             checked={selectedModels.includes(model.id)}

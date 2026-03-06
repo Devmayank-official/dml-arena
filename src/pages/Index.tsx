@@ -14,7 +14,7 @@ import { QuickReRun } from '@/components/QuickReRun';
 import { CategoryBadge } from '@/components/CategoryBadge';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { ConversationThread } from '@/components/ConversationThread';
-import { AI_MODELS } from '@/lib/models';
+import { AI_MODELS, ALL_MODELS } from '@/lib/models';
 import { classifyQuery, type QueryCategory } from '@/lib/queryCategories';
 import { useDeepDebate } from '@/hooks/useDeepDebate';
 import { useHistory } from '@/hooks/useHistory';
@@ -185,7 +185,7 @@ export default function Index() {
 
   const handleSelectAll = () => {
     // Only select up to the max allowed
-    setSelectedModels(AI_MODELS.slice(0, maxModels).map(m => m.id));
+    setSelectedModels(ALL_MODELS.slice(0, maxModels).map(m => m.id));
   };
 
   const handleDeselectAll = () => {

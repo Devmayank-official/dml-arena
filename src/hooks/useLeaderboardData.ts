@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AI_MODELS } from '@/lib/models';
+import { ALL_MODELS } from '@/lib/models';
 
 interface TokenUsage {
   prompt?: number;
@@ -83,7 +83,7 @@ export function useLeaderboardData(): LeaderboardData {
         responseTimes: { date: string; time: number }[];
       }>();
 
-      AI_MODELS.forEach(model => {
+      ALL_MODELS.forEach(model => {
         statsMap.set(model.id, {
           responses: 0,
           totalTime: 0,
@@ -141,7 +141,7 @@ export function useLeaderboardData(): LeaderboardData {
       });
 
       // Convert to array with calculated metrics
-      const statsArray: ModelStats[] = AI_MODELS.map(model => {
+      const statsArray: ModelStats[] = ALL_MODELS.map(model => {
         const stats = statsMap.get(model.id)!;
         const totalVotesForModel = stats.upvotes + stats.downvotes;
         

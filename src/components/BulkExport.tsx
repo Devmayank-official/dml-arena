@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { AI_MODELS } from '@/lib/models';
+import { getModelById } from '@/lib/models';
 
 interface ComparisonItem {
   id: string;
@@ -32,7 +32,7 @@ interface BulkExportProps {
 }
 
 function getModelName(modelId: string): string {
-  return AI_MODELS.find(m => m.id === modelId)?.name || modelId;
+  return getModelById(modelId)?.name || modelId;
 }
 
 function downloadBlob(blob: Blob, filename: string): void {

@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AppLayout } from '@/components/AppLayout';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { AI_MODELS } from '@/lib/models';
+import { getModelById } from '@/lib/models';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -355,7 +355,7 @@ export default function Profile() {
                       {/* Model chips */}
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {comparison.responses.slice(0, 5).map((response, idx) => {
-                          const model = AI_MODELS.find(m => m.id === response.model);
+                          const model = getModelById(response.model);
                           return (
                             <span
                               key={idx}

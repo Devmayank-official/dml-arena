@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/dialog';
 import { Layers, Plus, Trash2, Save, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AI_MODELS } from '@/lib/models';
+import { getModelById } from '@/lib/models';
+
 import { toast } from 'sonner';
 
 interface ModelPresetSelectorProps {
@@ -113,7 +114,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {preset.models.slice(0, 3).map((modelId) => {
-                      const model = AI_MODELS.find(m => m.id === modelId);
+                      const model = getModelById(modelId);
                       return model ? (
                         <span
                           key={modelId}
@@ -213,7 +214,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
                   <span className="text-sm text-muted-foreground">No models selected</span>
                 ) : (
                   selectedModels.map((modelId) => {
-                    const model = AI_MODELS.find(m => m.id === modelId);
+                    const model = getModelById(modelId);
                     return model ? (
                       <Badge key={modelId} variant="secondary" className="text-xs">
                         {model.name}
