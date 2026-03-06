@@ -1,4 +1,4 @@
-import { AI_MODELS } from './models';
+import { getModelById } from './models';
 
 interface TokenUsage {
   prompt: number;
