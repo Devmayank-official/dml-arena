@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Layers, Plus, Trash2, Save, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getModelById } from '@/lib/models';
 import { AI_MODELS } from '@/lib/models';
 import { toast } from 'sonner';
 
