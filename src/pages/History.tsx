@@ -32,7 +32,7 @@ import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
 import { BulkExport } from '@/components/BulkExport';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { getModelById, AI_MODELS } from '@/lib/models';
+import { getModelById, ALL_MODELS, PROVIDER_INFO, type ModelProvider } from '@/lib/models';
 import {
   Select,
   SelectContent,
