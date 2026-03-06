@@ -32,7 +32,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { AI_MODELS } from '@/lib/models';
+import { ALL_MODELS, PROVIDER_INFO, type ModelProvider } from '@/lib/models';
 import { ApiKeysSettings } from '@/components/ApiKeysSettings';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import {
