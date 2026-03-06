@@ -83,7 +83,7 @@ export function useLeaderboardData(): LeaderboardData {
         responseTimes: { date: string; time: number }[];
       }>();
 
-      AI_MODELS.forEach(model => {
+      ALL_MODELS.forEach(model => {
         statsMap.set(model.id, {
           responses: 0,
           totalTime: 0,
