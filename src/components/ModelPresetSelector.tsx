@@ -114,7 +114,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {preset.models.slice(0, 3).map((modelId) => {
-                      const model = AI_MODELS.find(m => m.id === modelId);
+                      const model = getModelById(modelId);
                       return model ? (
                         <span
                           key={modelId}
