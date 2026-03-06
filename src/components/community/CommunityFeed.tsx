@@ -4,7 +4,7 @@ import { ThumbsUp, ThumbsDown, MessageSquare, Clock, Sparkles, User, ExternalLin
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CommunityComparison } from '@/hooks/useCommunityFeed';
-import { AI_MODELS } from '@/lib/models';
+import { getModelById } from '@/lib/models';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CommunityFeedProps {
