@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AI_MODELS } from '@/lib/models';
+import { ALL_MODELS } from '@/lib/models';
 
 interface TokenUsage {
   prompt?: number;
