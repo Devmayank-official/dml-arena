@@ -9,7 +9,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { AI_MODELS } from '@/lib/models';
+import { ALL_MODELS, PROVIDER_INFO } from '@/lib/models';
 import { useState } from 'react';
 
 interface QuickReRunProps {
