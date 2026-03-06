@@ -380,32 +380,70 @@ export default function Settings() {
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <Layers className="h-5 w-5 text-primary" />
               <h2 className="text-base sm:text-lg font-semibold">Default Models</h2>
+              <Badge variant="secondary" className="ml-auto text-xs">
+                {settings.defaultModels.length} selected
+              </Badge>
             </div>
             <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
               Select which models are pre-selected when you start a new comparison.
             </p>
-            <div className="grid grid-cols-1 gap-2 sm:gap-3">
-              {AI_MODELS.map((model) => (
-                <div
-                  key={model.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors active:scale-[0.98] ${
-                    settings.defaultModels.includes(model.id)
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => handleModelToggle(model.id)}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: model.color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{model.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{model.provider}</p>
+            <Input
+              placeholder="Search models..."
+              className="mb-3"
+              onChange={(e) => {
+                const search = e.target.value.toLowerCase();
+                document.querySelectorAll('[data-model-item]').forEach((el) => {
+                  const name = el.getAttribute('data-model-name')?.toLowerCase() || '';
+                  const provider = el.getAttribute('data-model-provider')?.toLowerCase() || '';
+                  (el as HTMLElement).style.display = (name.includes(search) || provider.includes(search)) ? '' : 'none';
+                });
+                document.querySelectorAll('[data-provider-group]').forEach((el) => {
+                  const items = el.querySelectorAll('[data-model-item]');
+                  const anyVisible = Array.from(items).some(item => (item as HTMLElement).style.display !== 'none');
+                  (el as HTMLElement).style.display = anyVisible ? '' : 'none';
+                });
+              }}
+            />
+            <div className="max-h-80 overflow-y-auto space-y-4 pr-1">
+              {Object.entries(
+                ALL_MODELS.reduce((groups, model) => {
+                  const provider = model.provider;
+                  if (!groups[provider]) groups[provider] = [];
+                  groups[provider].push(model);
+                  return groups;
+                }, {} as Record<string, typeof ALL_MODELS>)
+              ).map(([provider, models]) => (
+                <div key={provider} data-provider-group>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    {PROVIDER_INFO[provider as ModelProvider]?.name || provider} ({models.length})
+                  </p>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {models.map((model) => (
+                      <div
+                        key={model.id}
+                        data-model-item
+                        data-model-name={model.name}
+                        data-model-provider={provider}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors active:scale-[0.98] ${
+                          settings.defaultModels.includes(model.id)
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleModelToggle(model.id)}
+                      >
+                        <div
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: model.color }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{model.name}</p>
+                        </div>
+                        {settings.defaultModels.includes(model.id) && (
+                          <Check className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {settings.defaultModels.includes(model.id) && (
-                    <Check className="h-4 w-4 text-primary shrink-0" />
-                  )}
                 </div>
               ))}
             </div>

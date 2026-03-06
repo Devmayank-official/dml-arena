@@ -185,7 +185,7 @@ export default function Index() {
 
   const handleSelectAll = () => {
     // Only select up to the max allowed
-    setSelectedModels(AI_MODELS.slice(0, maxModels).map(m => m.id));
+    setSelectedModels(ALL_MODELS.slice(0, maxModels).map(m => m.id));
   };
 
   const handleDeselectAll = () => {
