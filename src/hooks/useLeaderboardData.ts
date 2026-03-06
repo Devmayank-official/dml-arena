@@ -141,7 +141,7 @@ export function useLeaderboardData(): LeaderboardData {
       });
 
       // Convert to array with calculated metrics
-      const statsArray: ModelStats[] = AI_MODELS.map(model => {
+      const statsArray: ModelStats[] = ALL_MODELS.map(model => {
         const stats = statsMap.get(model.id)!;
         const totalVotesForModel = stats.upvotes + stats.downvotes;
         

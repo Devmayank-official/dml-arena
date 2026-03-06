@@ -214,7 +214,7 @@ export function ModelPresetSelector({ selectedModels, onApplyPreset }: ModelPres
                   <span className="text-sm text-muted-foreground">No models selected</span>
                 ) : (
                   selectedModels.map((modelId) => {
-                    const model = AI_MODELS.find(m => m.id === modelId);
+                    const model = getModelById(modelId);
                     return model ? (
                       <Badge key={modelId} variant="secondary" className="text-xs">
                         {model.name}

@@ -827,7 +827,7 @@ export const getModelById = (id: string): AIModel | undefined => {
 };
 
 export const getModelsByProvider = (provider: ModelProvider): AIModel[] => {
-  return [...AI_MODELS, ...OPENROUTER_MODELS].filter(model => model.provider === provider);
+  return ALL_MODELS.filter(model => model.provider === provider);
 };
 
 export const getModelsByCapability = (capability: ModelCapability, models: AIModel[]): AIModel[] => {

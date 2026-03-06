@@ -69,7 +69,7 @@ export function QuickReRun({ lastQuery, lastModels, onReRun, disabled }: QuickRe
           Select different models
         </DropdownMenuLabel>
         
-        {AI_MODELS.map((model) => (
+        {ALL_MODELS.map((model) => (
           <DropdownMenuCheckboxItem
             key={model.id}
             checked={selectedModels.includes(model.id)}

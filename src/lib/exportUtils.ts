@@ -24,7 +24,7 @@ export interface ExportData {
 }
 
 function getModelName(modelId: string): string {
-  return AI_MODELS.find(m => m.id === modelId)?.name || modelId;
+  return getModelById(modelId)?.name || modelId;
 }
 
 function downloadBlob(blob: Blob, filename: string): void {

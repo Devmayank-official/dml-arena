@@ -114,7 +114,7 @@ export function CommunityFeed({ comparisons, onVote, isAuthenticated }: Communit
             {/* Model responses preview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {comparison.responses.slice(0, 3).map((response, idx) => {
-                const model = AI_MODELS.find(m => m.id === response.model);
+                const model = getModelById(response.model);
                 return (
                   <div
                     key={idx}
