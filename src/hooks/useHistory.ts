@@ -98,8 +98,8 @@ export function useHistory(enabled: boolean) {
   const saveDebate = async (
     query: string,
     models: string[],
-    settings: any,
-    roundResponses: any[],
+    settings: DeepModeSettings,
+    roundResponses: RoundResponse[],
     finalAnswer: string | null,
     totalRounds: number,
     elapsedTime: number
