@@ -4,8 +4,9 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
 import { Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import DOMPurify from 'dompurify';
 
 interface MarkdownContentProps {
   content: string;
@@ -39,9 +40,10 @@ function CodeBlock({ language, code }: CodeBlockProps) {
           size="icon"
           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-secondary/80 hover:bg-secondary"
           onClick={handleCopy}
+          aria-label="Copy code"
         >
           {copied ? (
-            <Check className="h-3 w-3 text-green-500" />
+            <Check className="h-3 w-3 text-primary" />
           ) : (
             <Copy className="h-3 w-3" />
           )}
@@ -69,7 +71,35 @@ function CodeBlock({ language, code }: CodeBlockProps) {
   );
 }
 
+/**
+ * Sanitize content with DOMPurify to prevent XSS
+ * SKILL.md §12: "Sanitize HTML with DOMPurify"
+ */
+function sanitizeContent(content: string): string {
+  // DOMPurify with safe defaults - allows markdown syntax but strips dangerous HTML
+  return DOMPurify.sanitize(content, {
+    // Allow common markdown-generated tags
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'b', 'i', 'u', 's', 'del',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li',
+      'blockquote', 'pre', 'code',
+      'a', 'img',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'hr', 'span', 'div',
+    ],
+    // Allow safe attributes
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+    // Force all links to open in new tab with noopener
+    ALLOW_DATA_ATTR: false,
+    ADD_ATTR: ['target', 'rel'],
+  });
+}
+
 export function MarkdownContent({ content, className }: MarkdownContentProps) {
+  // Sanitize content before rendering
+  const sanitizedContent = useMemo(() => sanitizeContent(content), [content]);
+
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none", className)}>
       <ReactMarkdown
@@ -102,6 +132,18 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
             // Just pass through, the code component handles everything
             return <>{children}</>;
           },
+          // Force external links to open in new tab
+          a: ({ href, children, ...props }) => (
+            <a
+              href={href}
+              target={href?.startsWith('http') ? '_blank' : undefined}
+              rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+              className="text-primary hover:underline"
+              {...props}
+            >
+              {children}
+            </a>
+          ),
           ul: ({ children }) => (
             <ul className="list-disc pl-4 my-2 space-y-1">{children}</ul>
           ),
@@ -148,7 +190,7 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
           ),
         }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
     </div>
   );

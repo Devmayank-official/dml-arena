@@ -1,43 +1,35 @@
-import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+import { useAuthStore } from '@/stores/auth.store';
+import { ROUTES } from '@/constants/routes';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+/**
+ * Protected route wrapper using Zustand auth store
+ * SKILL.md: "Zustand for ALL global client state"
+ * 
+ * Redirects unauthenticated users to /auth with return path
+ */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { session, loading } = useAuthStore();
   const location = useLocation();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!session) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    // Redirect to auth with return path
+    return <Navigate to={ROUTES.AUTH} state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

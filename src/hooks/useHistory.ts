@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import type { ModelResponse, ComparisonHistory, DebateHistory, Vote } from '@/types';
+import { logger } from '@/lib/logger';
+import type { ModelResponse, ComparisonHistory, DebateHistory, Vote, DeepModeSettings, RoundResponse } from '@/types';
 
 export function useHistory(enabled: boolean) {
   const { user } = useAuth();
@@ -41,8 +42,8 @@ export function useHistory(enabled: boolean) {
           id: item.id,
           query: item.query,
           models: item.models,
-          settings: item.settings,
-          round_responses: item.round_responses as unknown as any[],
+          settings: item.settings as unknown as DeepModeSettings,
+          round_responses: item.round_responses as unknown as RoundResponse[],
           final_answer: item.final_answer,
           total_rounds: item.total_rounds,
           elapsed_time: item.elapsed_time,
@@ -98,8 +99,8 @@ export function useHistory(enabled: boolean) {
   const saveDebate = async (
     query: string,
     models: string[],
-    settings: any,
-    roundResponses: any[],
+    settings: DeepModeSettings,
+    roundResponses: RoundResponse[],
     finalAnswer: string | null,
     totalRounds: number,
     elapsedTime: number
@@ -128,8 +129,8 @@ export function useHistory(enabled: boolean) {
         id: data.id,
         query: data.query,
         models: data.models,
-        settings: data.settings,
-        round_responses: data.round_responses as unknown as any[],
+        settings: data.settings as unknown as DeepModeSettings,
+        round_responses: data.round_responses as unknown as RoundResponse[],
         final_answer: data.final_answer,
         total_rounds: data.total_rounds,
         elapsed_time: data.elapsed_time,
