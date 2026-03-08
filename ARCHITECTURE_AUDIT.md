@@ -341,4 +341,31 @@ src/features/
 
 ---
 
+---
+
+## ✅ APPROVED DECISIONS (2026-03-08)
+
+| Decision | Choice |
+|---|---|
+| **Priority** | Phase 1: Fix Foundation first |
+| **Key Features** | Battle Mode (1v1 Blind) + Cost & Latency Display |
+| **Architecture** | Feature-based folder structure |
+| **State Mgmt** | Full Zustand (arena, auth, settings, ui stores) |
+
+### Next Steps — Phase 1 Execution Order
+1. Add Error Boundaries (root + route + feature level)
+2. Add Code Splitting with `React.lazy()` + `<Suspense>` for all 14 pages
+3. Create `src/constants/config.ts` with Zod env validation
+4. Replace all `any` types with proper typed interfaces
+5. Migrate `useSubscription`, `useHistory`, `useFavorites` to TanStack Query
+6. Add Zod schemas for chat input, settings forms, profile forms
+7. Create Zustand stores: `arenaStore`, `authStore`, `settingsStore`, `uiStore`
+8. Begin feature-based folder migration (start with `arena/` and `auth/`)
+
+### After Phase 1 — Feature Implementation
+9. Battle Mode (1v1 blind comparison) — new table + edge function + UI
+10. Cost & Latency Display — tokens/sec, TTFB, $/query per model
+
+---
+
 *Generated: 2026-03-08 | Based on SKILL.md v1.0.0 Enterprise Standards*
