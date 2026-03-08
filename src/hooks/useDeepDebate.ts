@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { DeepModeSettings } from '@/components/DeepModeToggle';
+import { logger } from '@/lib/logger';
 
 interface RoundResponse {
   round: number;
