@@ -53,16 +53,16 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
     recognition.onstart = () => {
       setIsListening(true);
       setError(null);
-      console.log('Voice recognition started');
+      logger.debug('user_action', 'Voice recognition started');
     };
 
     recognition.onend = () => {
       setIsListening(false);
-      console.log('Voice recognition ended');
+      logger.debug('user_action', 'Voice recognition ended');
     };
 
     recognition.onerror = (event) => {
-      console.error('Voice recognition error:', event.error);
+      logger.error('error', 'Voice recognition error', { errorType: event.error });
       setIsListening(false);
       
       switch (event.error) {
