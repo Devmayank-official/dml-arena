@@ -202,7 +202,7 @@ export const useRazorpay = () => {
 
       return data;
     } catch (error) {
-      console.error('Cancellation error:', error);
+      logger.error('subscription', 'Cancellation error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Cancellation Error',
         description: error instanceof Error ? error.message : 'Something went wrong',
