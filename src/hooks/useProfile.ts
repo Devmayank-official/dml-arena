@@ -200,7 +200,7 @@ export function useProfile(userId: string | undefined) {
 
       return avatarUrl;
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      logger.error('error', 'Error uploading avatar', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to upload avatar', variant: 'destructive' });
       return null;
     } finally {
