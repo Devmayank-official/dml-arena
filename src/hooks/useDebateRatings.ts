@@ -44,7 +44,7 @@ export function useDebateRatings(debateId: string | null) {
       });
       setRatings(mappedRatings);
     } catch (error) {
-      console.error('Error fetching debate ratings:', error);
+      logger.error('error', 'Error fetching debate ratings', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
