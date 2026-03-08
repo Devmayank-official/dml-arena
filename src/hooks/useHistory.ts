@@ -106,7 +106,7 @@ export function useHistory(enabled: boolean) {
       
       const { data, error } = await supabase
         .from('debate_history')
-        .insert({
+        .insert([{
           query: params.query,
           models: params.models,
           settings: params.settings as unknown as Record<string, unknown>,
