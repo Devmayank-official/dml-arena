@@ -47,8 +47,8 @@ export function isProtectedRoute(path: string): boolean {
  * Check if a path is a public route
  */
 export function isPublicRoute(path: string): boolean {
-  const publicRoutes = [ROUTES.HOME, ROUTES.AUTH, ROUTES.PRICING, ROUTES.INSTALL];
-  return publicRoutes.includes(path as StaticRoute);
+  const publicPaths = ['/', '/auth', '/pricing', '/install'];
+  return publicPaths.includes(path);
 }
 
 /**
