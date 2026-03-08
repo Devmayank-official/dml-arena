@@ -131,7 +131,7 @@ export default function SharedResult() {
           });
         }
       } catch (err) {
-        console.error('Error fetching shared result:', err);
+        logger.error('error', 'Error fetching shared result', { error: err instanceof Error ? err.message : 'Unknown' });
         setError('Failed to load the shared result.');
       } finally {
         setLoading(false);

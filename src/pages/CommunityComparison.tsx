@@ -184,7 +184,7 @@ export default function CommunityComparison() {
         description: `Your vote for ${modelId.split('/')[1]} has been ${currentVote === type ? 'removed' : 'saved'}`,
       });
     } catch (error) {
-      console.error('Error voting:', error);
+      logger.error('error', 'Error voting', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to save vote',
