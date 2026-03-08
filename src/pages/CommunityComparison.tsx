@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RefreshCw, Clock, User, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
