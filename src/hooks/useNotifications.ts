@@ -31,8 +31,8 @@ export function useNotifications() {
         setNotifications(restored);
         setUnreadCount(restored.filter((n) => !n.read).length);
       }
-    } catch (error) {
-      console.error('Error loading notifications:', error);
+    } catch {
+      // Notification load error - silent
     }
   }, []);
 
