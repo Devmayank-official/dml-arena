@@ -27,8 +27,8 @@ export function useOfflineCache<T>(key: string, fetcher: () => Promise<T>) {
         // Cache expired, remove it
         localStorage.removeItem(cacheKey);
       }
-    } catch (e) {
-      console.error('Error loading from cache:', e);
+    } catch {
+      // Cache load error - silent
     }
     return null;
   }, [cacheKey]);
