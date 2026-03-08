@@ -48,7 +48,7 @@ export function useModelPerformance() {
         .limit(500);
 
       if (error) {
-        console.error('Error fetching performance:', error);
+        logger.error('error', 'Error fetching performance', { error: error.message });
         return;
       }
 
