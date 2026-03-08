@@ -75,7 +75,7 @@ export function useHistory(enabled: boolean) {
       
       const { data, error } = await supabase
         .from('comparison_history')
-        .insert({ query, responses: responses as unknown as Record<string, unknown>[], user_id: user.id })
+        .insert([{ query, responses: responses as unknown as Record<string, unknown>[], user_id: user.id }])
         .select()
         .single();
 
