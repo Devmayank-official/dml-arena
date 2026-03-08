@@ -160,7 +160,7 @@ export const useRazorpay = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      console.error('Payment initiation error:', error);
+      logger.error('subscription', 'Payment initiation error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Payment Error',
         description: error instanceof Error ? error.message : 'Something went wrong',
