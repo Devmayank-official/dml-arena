@@ -115,7 +115,7 @@ export function useHistory(enabled: boolean) {
           total_rounds: params.totalRounds,
           elapsed_time: params.elapsedTime,
           user_id: user.id,
-        })
+        }])
         .select()
         .single();
 
