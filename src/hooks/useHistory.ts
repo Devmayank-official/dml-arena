@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import type { ModelResponse, ComparisonHistory, DebateHistory, Vote } from '@/types';
+import type { ModelResponse, ComparisonHistory, DebateHistory, Vote, DeepModeSettings, RoundResponse } from '@/types';
 
 export function useHistory(enabled: boolean) {
   const { user } = useAuth();
