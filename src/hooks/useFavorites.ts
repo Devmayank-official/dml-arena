@@ -1,7 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * useFavorites hook
+ * SKILL.md §6.1: Migrated to TanStack Query for state management
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { queryKeys } from '@/constants';
+import { logger } from '@/lib/logger';
 
 export interface Favorite {
   id: string;
@@ -10,53 +16,36 @@ export interface Favorite {
   created_at: string;
 }
 
+async function fetchFavorites(userId: string): Promise<Favorite[]> {
+  const { data, error } = await supabase
+    .from('user_favorites')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logger.error('error', 'Failed to fetch favorites', { error: error.message });
+    return [];
+  }
+  return data || [];
+}
+
 export function useFavorites() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchFavorites = useCallback(async () => {
-    if (!user) {
-      setFavorites([]);
-      return;
-    }
+  const { data: favorites = [], isLoading, refetch } = useQuery({
+    queryKey: user ? queryKeys.favorites.list(user.id) : ['favorites', 'none'],
+    queryFn: () => (user ? fetchFavorites(user.id) : Promise.resolve([])),
+    enabled: !!user,
+    staleTime: 60_000, // 1 minute
+  });
 
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_favorites')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+  const addFavoriteMutation = useMutation({
+    mutationFn: async ({ type, id }: { type: 'comparison' | 'debate'; id: string }) => {
+      if (!user) throw new Error('Not authenticated');
 
-      if (error) throw error;
-      setFavorites(data || []);
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
-
-  const addFavorite = async (
-    type: 'comparison' | 'debate',
-    id: string
-  ): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to bookmark items.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    try {
       const insertData = {
         user_id: user.id,
         comparison_id: type === 'comparison' ? id : null,
@@ -70,46 +59,55 @@ export function useFavorites() {
         .single();
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.favorites.list(user.id) });
+      }
+      toast({ title: 'Added to favorites', description: 'Item has been bookmarked.' });
+    },
+    onError: (error) => {
+      logger.error('error', 'Failed to add favorite', { error: error instanceof Error ? error.message : 'Unknown' });
+      toast({ title: 'Error', description: 'Failed to add to favorites.', variant: 'destructive' });
+    },
+  });
 
-      setFavorites((prev) => [data, ...prev]);
-      toast({
-        title: 'Added to favorites',
-        description: 'Item has been bookmarked.',
-      });
+  const removeFavoriteMutation = useMutation({
+    mutationFn: async (favoriteId: string) => {
+      const { error } = await supabase.from('user_favorites').delete().eq('id', favoriteId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.favorites.list(user.id) });
+      }
+      toast({ title: 'Removed from favorites', description: 'Item has been unbookmarked.' });
+    },
+    onError: (error) => {
+      logger.error('error', 'Failed to remove favorite', { error: error instanceof Error ? error.message : 'Unknown' });
+      toast({ title: 'Error', description: 'Failed to remove from favorites.', variant: 'destructive' });
+    },
+  });
+
+  const addFavorite = async (type: 'comparison' | 'debate', id: string): Promise<boolean> => {
+    if (!user) {
+      toast({ title: 'Sign in required', description: 'Please sign in to bookmark items.', variant: 'destructive' });
+      return false;
+    }
+    try {
+      await addFavoriteMutation.mutateAsync({ type, id });
       return true;
-    } catch (error) {
-      console.error('Error adding favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add to favorites.',
-        variant: 'destructive',
-      });
+    } catch {
       return false;
     }
   };
 
   const removeFavorite = async (favoriteId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('user_favorites')
-        .delete()
-        .eq('id', favoriteId);
-
-      if (error) throw error;
-
-      setFavorites((prev) => prev.filter((f) => f.id !== favoriteId));
-      toast({
-        title: 'Removed from favorites',
-        description: 'Item has been unbookmarked.',
-      });
+      await removeFavoriteMutation.mutateAsync(favoriteId);
       return true;
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove from favorites.',
-        variant: 'destructive',
-      });
+    } catch {
       return false;
     }
   };
@@ -131,10 +129,7 @@ export function useFavorites() {
     return favorite?.id || null;
   };
 
-  const toggleFavorite = async (
-    type: 'comparison' | 'debate',
-    id: string
-  ): Promise<boolean> => {
+  const toggleFavorite = async (type: 'comparison' | 'debate', id: string): Promise<boolean> => {
     const favoriteId = getFavoriteId(type, id);
     if (favoriteId) {
       return removeFavorite(favoriteId);
@@ -151,6 +146,6 @@ export function useFavorites() {
     toggleFavorite,
     isFavorite,
     getFavoriteId,
-    refetch: fetchFavorites,
+    refetch,
   };
 }
