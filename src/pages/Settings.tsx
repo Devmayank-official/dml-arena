@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
+import { logger } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
