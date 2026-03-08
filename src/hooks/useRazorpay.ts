@@ -135,7 +135,7 @@ export const useRazorpay = () => {
             logger.logSubscription('Upgraded to Pro', billingCycle);
             onSuccess?.();
           } catch (err) {
-            console.error('Payment verification error:', err);
+            logger.error('subscription', 'Payment verification error', { error: err instanceof Error ? err.message : 'Unknown' });
             toast({
               title: 'Verification Issue',
               description: 'Payment received but verification pending. Please refresh.',
