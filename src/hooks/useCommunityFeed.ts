@@ -102,7 +102,7 @@ export function useCommunityFeed() {
 
       setComparisons(mappedComparisons);
     } catch (error) {
-      console.error('Error fetching community feed:', error);
+      logger.error('error', 'Error fetching community feed', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load community feed',
