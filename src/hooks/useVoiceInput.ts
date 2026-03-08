@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 interface UseVoiceInputOptions {
   onTranscript?: (transcript: string) => void;
