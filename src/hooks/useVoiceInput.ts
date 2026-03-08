@@ -124,7 +124,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
       setError(null);
       recognitionRef.current?.start();
     } catch (err) {
-      console.error('Error starting voice recognition:', err);
+      logger.error('error', 'Error starting voice recognition', { error: err instanceof Error ? err.message : 'Unknown' });
       setError('Failed to start voice recognition.');
     }
   }, [isSupported]);
