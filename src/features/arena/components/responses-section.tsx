@@ -24,7 +24,7 @@ interface ResponsesSectionProps {
   onReRun: (query: string, models: string[]) => void;
   onShare: () => Promise<string | null>;
   onVote: (modelId: string, type: 'up' | 'down') => void;
-  getVote: (modelId: string) => string | null;
+  getVote: (modelId: string) => 'up' | 'down' | null;
   onRegenerate: (modelId: string) => void;
   onRate: (modelId: string, rating: number) => void;
   getRating: (modelId: string) => number | null;

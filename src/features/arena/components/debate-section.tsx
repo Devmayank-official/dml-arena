@@ -2,23 +2,35 @@ import { Button } from '@/components/ui/button';
 import { ShareButton } from '@/components/ShareButton';
 import { DebateProgress } from '@/components/DebateProgress';
 
+interface RoundResponse {
+  round: number;
+  model: string;
+  response: string;
+}
+
+interface FinalAnswer {
+  answer: string;
+  synthesizer: string;
+  rounds: number;
+  participants: string[];
+}
+
 interface DebateSectionProps {
   deepDebate: {
     isDebating: boolean;
-    status: string;
-    roundResponses: unknown[];
-    finalAnswer: { answer: string } | null;
+    status: { phase: string; round?: number; message: string } | null;
+    roundResponses: RoundResponse[];
+    finalAnswer: FinalAnswer | null;
     elapsedTime: number;
     totalRounds: number;
     error?: string;
     reset: () => void;
   };
   currentDebateId: string | null;
-  deepModeSettings: { style: string; rounds: number };
   onSaveDebate: () => void;
   onShareDebate: () => Promise<string | null>;
   onVote: (modelId: string, type: 'up' | 'down') => void;
-  getVote: (modelId: string) => string | null;
+  getVote: (modelId: string) => 'up' | 'down' | null;
   onRate: (modelId: string, round: number, rating: number) => void;
   getRating: (modelId: string, round: number) => number | null;
 }
@@ -69,10 +81,10 @@ export function DebateSection({
         onSave={deepDebate.finalAnswer ? onSaveDebate : undefined}
         showVoting={!!currentDebateId}
         onVote={onVote}
-        getVote={(modelId) => getVote(modelId)}
+        getVote={getVote}
         showRating={!!currentDebateId}
         onRate={onRate}
-        getRating={(modelId, round) => getRating(modelId, round)}
+        getRating={getRating}
       />
       {deepDebate.error && (
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
