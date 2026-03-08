@@ -39,7 +39,7 @@ export function useRatings(enabled: boolean = true) {
       }));
       setRatings(mappedRatings);
     } catch (error) {
-      console.error('Error fetching ratings:', error);
+      logger.error('error', 'Error fetching ratings', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
