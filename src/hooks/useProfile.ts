@@ -217,7 +217,7 @@ export function useProfile(userId: string | undefined) {
       toast({ title: 'Email sent', description: 'Check your inbox for the password reset link.' });
       return true;
     } catch (error) {
-      console.error('Error sending password reset:', error);
+      logger.error('error', 'Error sending password reset', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to send password reset email', variant: 'destructive' });
       return false;
     }

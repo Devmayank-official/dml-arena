@@ -112,7 +112,7 @@ export function useDebateRatings(debateId: string | null) {
         }
       }
     } catch (error) {
-      console.error('Error saving debate rating:', error);
+      logger.error('error', 'Error saving debate rating', { error: error instanceof Error ? error.message : 'Unknown' });
     }
   }, [user, debateId, ratings]);
 

@@ -170,7 +170,7 @@ export function useLeaderboardData(): LeaderboardData {
 
       setModelStats(statsArray);
     } catch (error) {
-      console.error('Error fetching leaderboard data:', error);
+      logger.error('error', 'Error fetching leaderboard data', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }

@@ -105,7 +105,7 @@ export function useRatings(enabled: boolean = true) {
         }
       }
     } catch (error) {
-      console.error('Error saving rating:', error);
+      logger.error('error', 'Error saving rating', { error: error instanceof Error ? error.message : 'Unknown' });
     }
   }, [user, ratings]);
 

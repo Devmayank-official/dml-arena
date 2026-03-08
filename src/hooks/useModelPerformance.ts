@@ -88,7 +88,7 @@ export function useModelPerformance() {
       // Update local state
       fetchPerformance();
     } catch (err) {
-      console.error('Error tracking performance:', err);
+      logger.error('error', 'Error tracking performance', { error: err instanceof Error ? err.message : 'Unknown' });
     }
   }, [user, fetchPerformance]);
 

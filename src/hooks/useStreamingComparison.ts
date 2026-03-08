@@ -118,7 +118,7 @@ export function useStreamingComparison() {
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Streaming error:', error);
+        logger.error('api', 'Streaming error', { error: (error as Error).message });
       }
     } finally {
       setIsLoading(false);

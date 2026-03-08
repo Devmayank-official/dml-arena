@@ -40,8 +40,8 @@ export function useNotifications() {
   const saveNotifications = useCallback((items: Notification[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (error) {
-      console.error('Error saving notifications:', error);
+    } catch {
+      // Notification save error - silent
     }
   }, []);
 

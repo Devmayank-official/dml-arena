@@ -40,8 +40,8 @@ export function useOfflineCache<T>(key: string, fetcher: () => Promise<T>) {
         timestamp: Date.now(),
       };
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-    } catch (e) {
-      console.error('Error saving to cache:', e);
+    } catch {
+      // Cache save error - silent
     }
   }, [cacheKey]);
 

@@ -23,7 +23,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`[ErrorBoundary:${this.props.level ?? 'unknown'}]`, error, errorInfo);
+    logger.error('error', `ErrorBoundary [${this.props.level ?? 'unknown'}]: ${error.message}`, { stack: error.stack, componentStack: errorInfo.componentStack ?? undefined });
   }
 
   handleReset = () => {

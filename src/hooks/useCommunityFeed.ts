@@ -191,7 +191,7 @@ export function useCommunityFeed() {
         ));
       }
     } catch (error) {
-      console.error('Error voting:', error);
+      logger.error('error', 'Error voting', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to save vote',
