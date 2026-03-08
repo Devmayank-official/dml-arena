@@ -166,7 +166,7 @@ export function useProfile(userId: string | undefined) {
       toast({ title: 'Profile updated', description: 'Your changes have been saved.' });
       return true;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logger.error('error', 'Error updating profile', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to update profile', variant: 'destructive' });
       return false;
     }
