@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 
-const Landing = () => {
+export function Landing() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -280,3 +280,4 @@ const Landing = () => {
 };
 
 export default Landing;
+
