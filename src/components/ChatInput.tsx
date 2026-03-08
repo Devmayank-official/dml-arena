@@ -44,8 +44,9 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() && !isLoading && !disabled) {
-      onSend(input.trim());
+    const result = chatInputSchema.safeParse({ message: input });
+    if (result.success && !isLoading && !disabled) {
+      onSend(result.data.message);
       setInput('');
     }
   };
