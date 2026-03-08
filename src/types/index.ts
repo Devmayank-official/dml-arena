@@ -2,6 +2,10 @@
  * Zod schemas and TypeScript types
  * SKILL.md §2: "No 'any' — use 'unknown' + narrowing"
  * SKILL.md §2: "Zod for ALL external data validation"
+ * 
+ * Note: For database JSON fields that come as `Json` type from Supabase,
+ * we use TypeScript interfaces. Zod schemas are used for form validation
+ * and API responses where we control the data structure.
  */
 
 import { z } from 'zod';
@@ -35,63 +39,65 @@ export const modelResponseSchema = z.object({
 export type ModelResponse = z.infer<typeof modelResponseSchema>;
 
 // ============================================================================
-// DEEP MODE SETTINGS
+// DEEP MODE SETTINGS (TypeScript interface for DB compatibility)
 // ============================================================================
 
-export const debateStyleSchema = z.enum([
-  'collaborative',
-  'competitive',
-  'analytical',
-  'socratic',
-  'devils_advocate',
-  'consensus',
-]);
+export type DebateStyle = 
+  | 'collaborative' 
+  | 'competitive' 
+  | 'analytical' 
+  | 'socratic' 
+  | 'devils_advocate' 
+  | 'consensus';
 
-export const responseLengthSchema = z.enum([
-  'concise',
-  'balanced',
-  'detailed',
-  'more_detailed',
-]);
+export type ResponseLength = 'concise' | 'balanced' | 'detailed' | 'more_detailed';
 
-export const focusAreaSchema = z.enum([
-  'balanced',
-  'technical',
-  'creative',
-  'practical',
-  'theoretical',
-]);
+export type FocusArea = 'balanced' | 'technical' | 'creative' | 'practical' | 'theoretical';
 
-export const expertPersonaSchema = z.enum([
-  'none',
-  'scientist',
-  'engineer',
-  'philosopher',
-  'business',
-  'educator',
-  'critic',
-  'custom',
-]);
+export type ExpertPersona = 
+  | 'none' 
+  | 'scientist' 
+  | 'engineer' 
+  | 'philosopher' 
+  | 'business' 
+  | 'educator' 
+  | 'critic' 
+  | 'custom';
 
+/**
+ * Deep Mode settings - used in debates
+ * Note: Stored as JSON in database, so using interface rather than Zod
+ */
+export interface DeepModeSettings {
+  rounds: number;
+  style: DebateStyle;
+  responseLength: ResponseLength;
+  focusArea: FocusArea;
+  persona: ExpertPersona;
+  customPersona?: string;
+  synthesizer: string;
+}
+
+// Zod schema for validation when needed
 export const deepModeSettingsSchema = z.object({
   rounds: z.number().min(2).max(5),
-  style: debateStyleSchema,
-  responseLength: responseLengthSchema,
-  focusArea: focusAreaSchema,
-  persona: expertPersonaSchema,
+  style: z.enum(['collaborative', 'competitive', 'analytical', 'socratic', 'devils_advocate', 'consensus']),
+  responseLength: z.enum(['concise', 'balanced', 'detailed', 'more_detailed']),
+  focusArea: z.enum(['balanced', 'technical', 'creative', 'practical', 'theoretical']),
+  persona: z.enum(['none', 'scientist', 'engineer', 'philosopher', 'business', 'educator', 'critic', 'custom']),
   customPersona: z.string().optional(),
   synthesizer: z.string(),
 });
 
-export type DeepModeSettings = z.infer<typeof deepModeSettingsSchema>;
-export type DebateStyle = z.infer<typeof debateStyleSchema>;
-export type ResponseLength = z.infer<typeof responseLengthSchema>;
-export type FocusArea = z.infer<typeof focusAreaSchema>;
-export type ExpertPersona = z.infer<typeof expertPersonaSchema>;
-
 // ============================================================================
 // ROUND RESPONSE (for debates)
 // ============================================================================
+
+export interface RoundResponse {
+  round: number;
+  model: string;
+  response: string;
+}
 
 export const roundResponseSchema = z.object({
   round: z.number(),
@@ -99,200 +105,173 @@ export const roundResponseSchema = z.object({
   response: z.string(),
 });
 
-export type RoundResponse = z.infer<typeof roundResponseSchema>;
-
 // ============================================================================
 // COMPARISON HISTORY
 // ============================================================================
 
-export const comparisonHistorySchema = z.object({
-  id: z.string().uuid(),
-  query: z.string(),
-  responses: z.array(modelResponseSchema),
-  created_at: z.string(),
-  category: z.string().nullable().optional(),
-  is_public: z.boolean().optional(),
-});
-
-export type ComparisonHistory = z.infer<typeof comparisonHistorySchema>;
+export interface ComparisonHistory {
+  id: string;
+  query: string;
+  responses: ModelResponse[];
+  created_at: string;
+  category?: string | null;
+  is_public?: boolean;
+}
 
 // ============================================================================
 // DEBATE HISTORY
 // ============================================================================
 
-export const debateHistorySchema = z.object({
-  id: z.string().uuid(),
-  query: z.string(),
-  models: z.array(z.string()),
-  settings: deepModeSettingsSchema,
-  round_responses: z.array(roundResponseSchema),
-  final_answer: z.string().nullable(),
-  total_rounds: z.number(),
-  elapsed_time: z.number(),
-  created_at: z.string(),
-  is_public: z.boolean().optional(),
-});
-
-export type DebateHistory = z.infer<typeof debateHistorySchema>;
+/**
+ * Debate history as stored in database
+ * Note: settings and round_responses are JSON fields
+ */
+export interface DebateHistory {
+  id: string;
+  query: string;
+  models: string[];
+  settings: DeepModeSettings;
+  round_responses: RoundResponse[];
+  final_answer: string | null;
+  total_rounds: number;
+  elapsed_time: number;
+  created_at: string;
+  is_public?: boolean;
+}
 
 // ============================================================================
 // VOTES
 // ============================================================================
 
-export const voteTypeSchema = z.enum(['up', 'down']);
-export const historyTypeSchema = z.enum(['comparison', 'debate']);
+export type VoteType = 'up' | 'down';
+export type HistoryType = 'comparison' | 'debate';
 
-export const voteSchema = z.object({
-  id: z.string().uuid(),
-  history_id: z.string().uuid(),
-  history_type: historyTypeSchema,
-  model_id: z.string(),
-  vote_type: voteTypeSchema,
-});
-
-export type Vote = z.infer<typeof voteSchema>;
-export type VoteType = z.infer<typeof voteTypeSchema>;
-export type HistoryType = z.infer<typeof historyTypeSchema>;
+export interface Vote {
+  id: string;
+  history_id: string;
+  history_type: HistoryType;
+  model_id: string;
+  vote_type: VoteType;
+}
 
 // ============================================================================
 // QUERY HISTORY (client-side tracking)
 // ============================================================================
 
-export const queryHistorySchema = z.object({
-  id: z.string().uuid().nullable(),
-  query: z.string(),
-  responses: z.array(modelResponseSchema),
-  timestamp: z.date(),
-});
-
-export type QueryHistory = z.infer<typeof queryHistorySchema>;
+export interface QueryHistory {
+  id: string | null;
+  query: string;
+  responses: ModelResponse[];
+  timestamp: Date;
+}
 
 // ============================================================================
 // CONVERSATION TYPES
 // ============================================================================
 
-export const conversationMessageSchema = z.object({
-  role: z.enum(['user', 'assistant']),
-  content: z.string(),
-  model: z.string().optional(),
-  timestamp: z.date(),
-});
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  model?: string;
+  timestamp: Date;
+}
 
-export type ConversationMessage = z.infer<typeof conversationMessageSchema>;
+export interface ConversationTurn {
+  id: string;
+  query: string;
+  responses: ModelResponse[];
+  timestamp: Date;
+}
 
-export const conversationTurnSchema = z.object({
-  id: z.string(),
-  query: z.string(),
-  responses: z.array(modelResponseSchema),
-  timestamp: z.date(),
-});
-
-export type ConversationTurn = z.infer<typeof conversationTurnSchema>;
-
-export const conversationSchema = z.object({
-  id: z.string(),
-  turns: z.array(conversationTurnSchema),
-  selectedModels: z.array(z.string()),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export type Conversation = z.infer<typeof conversationSchema>;
+export interface Conversation {
+  id: string;
+  turns: ConversationTurn[];
+  selectedModels: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // ============================================================================
 // EXPORT DATA
 // ============================================================================
 
-export const exportDataSchema = z.object({
-  query: z.string(),
-  responses: z.array(modelResponseSchema),
-  createdAt: z.string().optional(),
-  type: historyTypeSchema.optional(),
-  debateRounds: z.array(roundResponseSchema).optional(),
-  finalAnswer: z.string().optional(),
-});
-
-export type ExportData = z.infer<typeof exportDataSchema>;
+export interface ExportData {
+  query: string;
+  responses: ModelResponse[];
+  createdAt?: string;
+  type?: HistoryType;
+  debateRounds?: RoundResponse[];
+  finalAnswer?: string;
+}
 
 // ============================================================================
 // SUBSCRIPTION
 // ============================================================================
 
-export const subscriptionPlanSchema = z.enum(['free', 'pro']);
+export type SubscriptionPlan = 'free' | 'pro';
 
-export const subscriptionSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  plan: subscriptionPlanSchema,
-  monthly_usage: z.number(),
-  usage_reset_at: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  subscription_start: z.string().nullable().optional(),
-  subscription_end: z.string().nullable().optional(),
-  cancelled_at: z.string().nullable().optional(),
-  razorpay_subscription_id: z.string().nullable().optional(),
-  billing_cycle: z.string().nullable().optional(),
-});
-
-export type Subscription = z.infer<typeof subscriptionSchema>;
-export type SubscriptionPlan = z.infer<typeof subscriptionPlanSchema>;
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan: SubscriptionPlan;
+  monthly_usage: number;
+  usage_reset_at: string;
+  created_at: string;
+  updated_at: string;
+  subscription_start?: string | null;
+  subscription_end?: string | null;
+  cancelled_at?: string | null;
+  razorpay_subscription_id?: string | null;
+  billing_cycle?: string | null;
+}
 
 // ============================================================================
 // RATE LIMITS
 // ============================================================================
 
-export const rateLimitInfoSchema = z.object({
-  window: z.string(),
-  usage: z.number(),
-  limit: z.number(),
-  remaining: z.number(),
-  resetAt: z.string(),
-  exceeded: z.boolean(),
-});
+export interface RateLimitInfo {
+  window: string;
+  usage: number;
+  limit: number;
+  remaining: number;
+  resetAt: string;
+  exceeded: boolean;
+}
 
-export type RateLimitInfo = z.infer<typeof rateLimitInfoSchema>;
-
-export const rateLimitsSchema = z.object({
-  perMinute: rateLimitInfoSchema.nullable(),
-  perHour: rateLimitInfoSchema.nullable(),
-  perDay: rateLimitInfoSchema.nullable(),
-  perMonth: rateLimitInfoSchema.nullable(),
-});
-
-export type RateLimits = z.infer<typeof rateLimitsSchema>;
+export interface RateLimits {
+  perMinute: RateLimitInfo | null;
+  perHour: RateLimitInfo | null;
+  perDay: RateLimitInfo | null;
+  perMonth: RateLimitInfo | null;
+}
 
 // ============================================================================
 // FAVORITES
 // ============================================================================
 
-export const favoriteSchema = z.object({
-  id: z.string().uuid(),
-  comparison_id: z.string().uuid().nullable(),
-  debate_id: z.string().uuid().nullable(),
-  created_at: z.string(),
-});
-
-export type Favorite = z.infer<typeof favoriteSchema>;
+export interface Favorite {
+  id: string;
+  comparison_id: string | null;
+  debate_id: string | null;
+  created_at: string;
+}
 
 // ============================================================================
 // PROFILE
 // ============================================================================
 
-export const profileSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  display_name: z.string().nullable(),
-  avatar_url: z.string().nullable(),
-  bio: z.string().nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-export type Profile = z.infer<typeof profileSchema>;
+export interface Profile {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 // ============================================================================
-// FORM SCHEMAS
+// FORM SCHEMAS (Zod for validation)
 // ============================================================================
 
 export const chatInputSchema = z.object({
@@ -323,6 +302,15 @@ export type ProfileFormData = z.infer<typeof profileFormSchema>;
 // API KEY CONFIG
 // ============================================================================
 
+export interface ApiKeyConfig {
+  openrouter?: string;
+  openai?: string;
+  anthropic?: string;
+  google?: string;
+  mistral?: string;
+  groq?: string;
+}
+
 export const apiKeyConfigSchema = z.object({
   openrouter: z.string().optional(),
   openai: z.string().optional(),
@@ -332,26 +320,21 @@ export const apiKeyConfigSchema = z.object({
   groq: z.string().optional(),
 });
 
-export type ApiKeyConfig = z.infer<typeof apiKeyConfigSchema>;
-
 // ============================================================================
 // STREAMING EVENTS
 // ============================================================================
 
-export const streamEventTypeSchema = z.enum(['start', 'delta', 'complete', 'error']);
+export type StreamEventType = 'start' | 'delta' | 'complete' | 'error';
 
-export const streamEventSchema = z.object({
-  type: streamEventTypeSchema,
-  model: z.string(),
-  content: z.string().optional(),
-  duration: z.number().optional(),
-  tokens: tokenUsageSchema.optional(),
-  error: z.string().optional(),
-  apiKeySource: z.enum(['user', 'system']).optional(),
-});
-
-export type StreamEvent = z.infer<typeof streamEventSchema>;
-export type StreamEventType = z.infer<typeof streamEventTypeSchema>;
+export interface StreamEvent {
+  type: StreamEventType;
+  model: string;
+  content?: string;
+  duration?: number;
+  tokens?: TokenUsage;
+  error?: string;
+  apiKeySource?: 'user' | 'system';
+}
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -381,4 +364,46 @@ export function parseWithErrors<T>(
     return { success: true, data: result.data };
   }
   return { success: false, errors: result.error };
+}
+
+/**
+ * Type guard for ModelResponse
+ */
+export function isModelResponse(obj: unknown): obj is ModelResponse {
+  if (!obj || typeof obj !== 'object') return false;
+  const response = obj as Record<string, unknown>;
+  return (
+    typeof response.model === 'string' &&
+    typeof response.response === 'string' &&
+    typeof response.duration === 'number'
+  );
+}
+
+/**
+ * Type guard for RoundResponse
+ */
+export function isRoundResponse(obj: unknown): obj is RoundResponse {
+  if (!obj || typeof obj !== 'object') return false;
+  const response = obj as Record<string, unknown>;
+  return (
+    typeof response.round === 'number' &&
+    typeof response.model === 'string' &&
+    typeof response.response === 'string'
+  );
+}
+
+/**
+ * Type guard for DeepModeSettings
+ */
+export function isDeepModeSettings(obj: unknown): obj is DeepModeSettings {
+  if (!obj || typeof obj !== 'object') return false;
+  const settings = obj as Record<string, unknown>;
+  return (
+    typeof settings.rounds === 'number' &&
+    typeof settings.style === 'string' &&
+    typeof settings.responseLength === 'string' &&
+    typeof settings.focusArea === 'string' &&
+    typeof settings.persona === 'string' &&
+    typeof settings.synthesizer === 'string'
+  );
 }
