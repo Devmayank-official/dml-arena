@@ -591,15 +591,22 @@ docker-compose.yml
 
 ---
 
-## DECISIONS PENDING (Awaiting User Input)
+## ✅ APPROVED DECISIONS (2026-03-08)
 
-See clarifying questions in chat for decisions on:
-1. Implementation priority (foundation fix vs new features)
-2. Battle Mode UX approach
-3. i18n languages
-4. Testing strategy
-5. Admin panel scope
-6. Self-hosting target audience
+| Decision | Choice |
+|---|---|
+| **Priority** | Phase 1: Fix Foundation First |
+| **Battle Mode UX** | Side-by-Side Blind (Classic LM Arena) |
+| **Enterprise Features** | REST API Access + Admin Dashboard (Self-Host) |
+| **Testing** | Critical Path E2E (Playwright) — auth, comparison, battle, payment |
+| **i18n** | English Only for now, i18n framework for future expansion |
+
+### Execution Order
+1. **Phase 1** — Fix all SKILL.md critical violations (Zod config, `any` removal, TanStack Query migration, form validation)
+2. **Phase 3** — Battle Mode (side-by-side blind) + ELO Rating System
+3. **Phase 4** — REST API Access + Admin Dashboard for self-hosting
+4. **Phase 5** — E2E testing for critical paths
+5. **Phase 2** — Complete feature-based migration (ongoing)
 
 ---
 
