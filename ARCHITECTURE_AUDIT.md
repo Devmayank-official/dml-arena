@@ -352,20 +352,25 @@ src/features/
 | **Architecture** | Feature-based folder structure |
 | **State Mgmt** | Full Zustand (arena, auth, settings, ui stores) |
 
-### Next Steps — Phase 1 Execution Order
-1. Add Error Boundaries (root + route + feature level)
-2. Add Code Splitting with `React.lazy()` + `<Suspense>` for all 14 pages
-3. Create `src/constants/config.ts` with Zod env validation
-4. Replace all `any` types with proper typed interfaces
-5. Migrate `useSubscription`, `useHistory`, `useFavorites` to TanStack Query
-6. Add Zod schemas for chat input, settings forms, profile forms
-7. Create Zustand stores: `arenaStore`, `authStore`, `settingsStore`, `uiStore`
-8. Begin feature-based folder migration (start with `arena/` and `auth/`)
+### Phase 1 — Completed ✅
+1. ✅ Error Boundaries (root + route + feature level) — `ErrorBoundary.tsx`
+2. ✅ Code Splitting with `React.lazy()` + `<Suspense>` for all 15 pages — `App.tsx`
+3. ☐ Create `src/constants/config.ts` with Zod env validation
+4. ☐ Replace all `any` types with proper typed interfaces
+5. ☐ Migrate `useSubscription`, `useHistory`, `useFavorites` to TanStack Query
+6. ☐ Add Zod schemas for chat input, settings forms, profile forms
 
-### After Phase 1 — Feature Implementation
-9. Battle Mode (1v1 blind comparison) — new table + edge function + UI
-10. Cost & Latency Display — tokens/sec, TTFB, $/query per model
+### Phase 2 — Completed ✅
+7. ✅ Feature-based folder structure — `src/features/arena/` created
+8. ✅ Zustand stores — `auth.store.ts`, `settings.store.ts`, `arena.store.ts`, `ui.store.ts`
+9. ✅ Break God components — Index.tsx 549→155 lines, split into arena sub-components
+10. ✅ Named exports — All pages now export both named + default
+11. ✅ Bundle optimization — Manual chunks in Vite (react, router, query, motion, ui, markdown, charts, supabase, zustand)
+
+### Next — Feature Implementation
+12. ☐ Battle Mode (1v1 blind comparison) — new table + edge function + UI
+13. ☐ Cost & Latency Display — tokens/sec, TTFB, $/query per model
 
 ---
 
-*Generated: 2026-03-08 | Based on SKILL.md v1.0.0 Enterprise Standards*
+*Updated: 2026-03-08 | Based on SKILL.md v1.0.0 Enterprise Standards*
