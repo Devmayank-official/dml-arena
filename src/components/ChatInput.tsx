@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { chatInputSchema } from '@/lib/schemas';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
