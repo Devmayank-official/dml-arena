@@ -151,7 +151,7 @@ export default function Settings() {
       setDeleteConfirmText('');
       setUnderstandConfirmation(false);
     } catch (error) {
-      console.error('Clear history error:', error);
+      logger.error('error', 'Clear history error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to clear history', variant: 'destructive' });
     } finally {
       setIsClearing(false);
