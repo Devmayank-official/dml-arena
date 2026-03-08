@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RefreshCw, Clock, User, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -116,7 +117,7 @@ export default function CommunityComparison() {
         setVoteCounts(counts);
       }
     } catch (error) {
-      console.error('Error fetching comparison:', error);
+      logger.error('error', 'Error fetching comparison', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load comparison',
@@ -183,7 +184,7 @@ export default function CommunityComparison() {
         description: `Your vote for ${modelId.split('/')[1]} has been ${currentVote === type ? 'removed' : 'saved'}`,
       });
     } catch (error) {
-      console.error('Error voting:', error);
+      logger.error('error', 'Error voting', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to save vote',

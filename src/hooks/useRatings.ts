@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
 
 interface Rating {
   id: string;
@@ -38,7 +39,7 @@ export function useRatings(enabled: boolean = true) {
       }));
       setRatings(mappedRatings);
     } catch (error) {
-      console.error('Error fetching ratings:', error);
+      logger.error('error', 'Error fetching ratings', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +105,7 @@ export function useRatings(enabled: boolean = true) {
         }
       }
     } catch (error) {
-      console.error('Error saving rating:', error);
+      logger.error('error', 'Error saving rating', { error: error instanceof Error ? error.message : 'Unknown' });
     }
   }, [user, ratings]);
 

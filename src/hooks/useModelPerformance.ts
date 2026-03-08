@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/lib/logger';
 import type { QueryCategory } from '@/lib/queryCategories';
 
 interface PerformanceRecord {
@@ -47,13 +48,13 @@ export function useModelPerformance() {
         .limit(500);
 
       if (error) {
-        console.error('Error fetching performance:', error);
+        logger.error('error', 'Error fetching performance', { error: error.message });
         return;
       }
 
       setRecords(data || []);
     } catch (err) {
-      console.error('Error in fetchPerformance:', err);
+      logger.error('error', 'Error in fetchPerformance', { error: err instanceof Error ? err.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +88,7 @@ export function useModelPerformance() {
       // Update local state
       fetchPerformance();
     } catch (err) {
-      console.error('Error tracking performance:', err);
+      logger.error('error', 'Error tracking performance', { error: err instanceof Error ? err.message : 'Unknown' });
     }
   }, [user, fetchPerformance]);
 

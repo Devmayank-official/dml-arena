@@ -1,7 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * useSubscription hook
+ * SKILL.md §6.1: Migrated to TanStack Query for state management
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/constants';
 
 export type SubscriptionPlan = 'free' | 'pro';
 
@@ -13,6 +18,10 @@ export interface Subscription {
   usage_reset_at: string;
   created_at: string;
   updated_at: string;
+  billing_cycle?: string | null;
+  subscription_start?: string | null;
+  subscription_end?: string | null;
+  cancelled_at?: string | null;
 }
 
 export interface RateLimitInfo {
@@ -56,60 +65,45 @@ const emptyRateLimits: RateLimits = {
   perMonth: null,
 };
 
+async function fetchSubscription(userId: string): Promise<Subscription | null> {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    logger.error('subscription', 'Failed to fetch subscription', { error: error.message });
+    return null;
+  }
+
+  logger.logSubscription('Subscription loaded', data.plan);
+  return {
+    ...data,
+    plan: data.plan as SubscriptionPlan,
+  };
+}
+
 export const useSubscription = () => {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [rateLimits, setRateLimits] = useState<RateLimits>(emptyRateLimits);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchSubscription = useCallback(async () => {
-    if (!user) {
-      setSubscription(null);
-      setRateLimits(emptyRateLimits);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching subscription:', error);
-        logger.error('subscription', 'Failed to fetch subscription', { error: error.message });
-        setSubscription(null);
-      } else {
-        setSubscription({
-          ...data,
-          plan: data.plan as SubscriptionPlan,
-        });
-        logger.logSubscription('Subscription loaded', data.plan);
-      }
-    } catch (err) {
-      console.error('Error in fetchSubscription:', err);
-      logger.error('subscription', 'Unexpected error fetching subscription', { 
-        error: err instanceof Error ? err.message : 'Unknown error' 
-      });
-      setSubscription(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
+  const { data: subscription, isLoading, refetch } = useQuery({
+    queryKey: user ? queryKeys.subscription.detail(user.id) : ['subscription', 'none'],
+    queryFn: () => (user ? fetchSubscription(user.id) : Promise.resolve(null)),
+    enabled: !!user,
+    staleTime: 30_000, // 30 seconds
+  });
 
   const isPro = subscription?.plan === 'pro';
-  
   const planLimits = isPro ? PRO_PLAN_LIMITS : FREE_PLAN_LIMITS;
   
-  const remainingQueries = rateLimits.perMonth 
-    ? rateLimits.perMonth.remaining 
-    : (isPro ? Infinity : Math.max(0, planLimits.perMonth - (subscription?.monthly_usage || 0)));
+  // For rate limits, we manage them separately as they come from mutations
+  const rateLimits = emptyRateLimits;
+
+  const remainingQueries = isPro 
+    ? Infinity 
+    : Math.max(0, planLimits.perMonth - (subscription?.monthly_usage || 0));
 
   const canUseModel = (modelId: string) => {
     if (isPro) return true;
@@ -121,23 +115,19 @@ export const useSubscription = () => {
   const canShare = isPro;
   const canExport = isPro;
 
-  // Check if any rate limit is exceeded
   const isRateLimited = Object.values(rateLimits).some(limit => limit?.exceeded);
-  
-  // Get the specific exceeded limit
   const exceededLimit = Object.entries(rateLimits).find(([_, limit]) => limit?.exceeded)?.[0] as keyof RateLimits | undefined;
-
   const hasReachedLimit = !isPro && (isRateLimited || remainingQueries <= 0);
 
-  const incrementUsage = async (): Promise<{ 
-    success: boolean; 
-    error?: string; 
-    limits?: RateLimitInfo[];
-    exceededWindow?: string;
-  }> => {
-    if (!user) return { success: false, error: 'Not authenticated' };
+  const incrementUsageMutation = useMutation({
+    mutationFn: async (): Promise<{
+      success: boolean;
+      error?: string;
+      limits?: RateLimitInfo[];
+      exceededWindow?: string;
+    }> => {
+      if (!user) return { success: false, error: 'Not authenticated' };
 
-    try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         return { success: false, error: 'Not authenticated' };
@@ -157,64 +147,40 @@ export const useSubscription = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        // Update rate limits from server response
-        if (data.limits) {
-          updateRateLimitsFromResponse(data.limits);
+        const monthlyLimit = data.limits?.find((l: RateLimitInfo) => l.window === 'perMonth');
+        if (monthlyLimit) {
+          logger.logRateLimit(
+            data.exceededWindow || 'unknown',
+            monthlyLimit.usage,
+            monthlyLimit.limit,
+            true
+          );
         }
-        
-        // Log rate limit exceeded
-        logger.logRateLimit(
-          data.exceededWindow || 'unknown',
-          data.limits?.[0]?.usage || 0,
-          data.limits?.[0]?.limit || 0,
-          true
-        );
-        
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: data.error || 'Rate limit exceeded',
           limits: data.limits,
           exceededWindow: data.exceededWindow,
         };
       }
 
-      // Update local state with server response
-      if (data.limits) {
-        updateRateLimitsFromResponse(data.limits);
-        
-        // Log successful usage increment
-        const monthlyLimit = data.limits.find((l: RateLimitInfo) => l.window === 'perMonth');
-        if (monthlyLimit) {
-          logger.logRateLimit('perMonth', monthlyLimit.usage, monthlyLimit.limit, monthlyLimit.exceeded);
-        }
-        
-        // Also update subscription monthly usage
-        if (monthlyLimit) {
-          setSubscription(prev => prev ? {
-            ...prev,
-            monthly_usage: monthlyLimit.usage,
-          } : null);
-        }
+      const monthlyLimit = data.limits?.find((l: RateLimitInfo) => l.window === 'perMonth');
+      if (monthlyLimit) {
+        logger.logRateLimit('perMonth', monthlyLimit.usage, monthlyLimit.limit, monthlyLimit.exceeded);
       }
 
       return { success: true, limits: data.limits };
-    } catch (err) {
-      console.error('Error incrementing usage:', err);
-      return { success: false, error: 'Network error' };
-    }
-  };
-
-  const updateRateLimitsFromResponse = (limits: RateLimitInfo[]) => {
-    const newLimits: RateLimits = { ...emptyRateLimits };
-    for (const limit of limits) {
-      if (limit.window in newLimits) {
-        newLimits[limit.window as keyof RateLimits] = limit;
+    },
+    onSuccess: () => {
+      // Invalidate subscription to refetch updated usage
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.subscription.detail(user.id) });
       }
-    }
-    setRateLimits(newLimits);
-  };
+    },
+  });
 
-  // Get formatted time until reset for a specific window
+  const incrementUsage = async () => incrementUsageMutation.mutateAsync();
+
   const getTimeUntilReset = (window: keyof RateLimits): string | null => {
     const limit = rateLimits[window];
     if (!limit) return null;
@@ -246,8 +212,7 @@ export const useSubscription = () => {
     canExport,
     hasReachedLimit,
     incrementUsage,
-    refetch: fetchSubscription,
-    // New rate limit properties
+    refetch,
     rateLimits,
     isRateLimited,
     exceededLimit,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { ALL_MODELS } from '@/lib/models';
 
 interface TokenUsage {
@@ -169,7 +170,7 @@ export function useLeaderboardData(): LeaderboardData {
 
       setModelStats(statsArray);
     } catch (error) {
-      console.error('Error fetching leaderboard data:', error);
+      logger.error('error', 'Error fetching leaderboard data', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }

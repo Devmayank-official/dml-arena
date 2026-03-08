@@ -135,7 +135,7 @@ export const useRazorpay = () => {
             logger.logSubscription('Upgraded to Pro', billingCycle);
             onSuccess?.();
           } catch (err) {
-            console.error('Payment verification error:', err);
+            logger.error('subscription', 'Payment verification error', { error: err instanceof Error ? err.message : 'Unknown' });
             toast({
               title: 'Verification Issue',
               description: 'Payment received but verification pending. Please refresh.',
@@ -160,7 +160,7 @@ export const useRazorpay = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      console.error('Payment initiation error:', error);
+      logger.error('subscription', 'Payment initiation error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Payment Error',
         description: error instanceof Error ? error.message : 'Something went wrong',
@@ -202,7 +202,7 @@ export const useRazorpay = () => {
 
       return data;
     } catch (error) {
-      console.error('Cancellation error:', error);
+      logger.error('subscription', 'Cancellation error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Cancellation Error',
         description: error instanceof Error ? error.message : 'Something went wrong',

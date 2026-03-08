@@ -31,8 +31,8 @@ export function useNotifications() {
         setNotifications(restored);
         setUnreadCount(restored.filter((n) => !n.read).length);
       }
-    } catch (error) {
-      console.error('Error loading notifications:', error);
+    } catch {
+      // Notification load error - silent
     }
   }, []);
 
@@ -40,8 +40,8 @@ export function useNotifications() {
   const saveNotifications = useCallback((items: Notification[]) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (error) {
-      console.error('Error saving notifications:', error);
+    } catch {
+      // Notification save error - silent
     }
   }, []);
 

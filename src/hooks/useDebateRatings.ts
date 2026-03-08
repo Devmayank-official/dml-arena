@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
 
 interface DebateRating {
   id: string;
@@ -43,7 +44,7 @@ export function useDebateRatings(debateId: string | null) {
       });
       setRatings(mappedRatings);
     } catch (error) {
-      console.error('Error fetching debate ratings:', error);
+      logger.error('error', 'Error fetching debate ratings', { error: error instanceof Error ? error.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +112,7 @@ export function useDebateRatings(debateId: string | null) {
         }
       }
     } catch (error) {
-      console.error('Error saving debate rating:', error);
+      logger.error('error', 'Error saving debate rating', { error: error instanceof Error ? error.message : 'Unknown' });
     }
   }, [user, debateId, ratings]);
 

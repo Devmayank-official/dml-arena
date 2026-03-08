@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface TokenUsage {
   prompt: number;
@@ -135,7 +136,7 @@ export function useProfile(userId: string | undefined) {
         modelsUsed: allModels.size,
       });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('error', 'Error fetching profile', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load profile',
@@ -165,7 +166,7 @@ export function useProfile(userId: string | undefined) {
       toast({ title: 'Profile updated', description: 'Your changes have been saved.' });
       return true;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      logger.error('error', 'Error updating profile', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to update profile', variant: 'destructive' });
       return false;
     }
@@ -199,7 +200,7 @@ export function useProfile(userId: string | undefined) {
 
       return avatarUrl;
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      logger.error('error', 'Error uploading avatar', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to upload avatar', variant: 'destructive' });
       return null;
     } finally {
@@ -216,7 +217,7 @@ export function useProfile(userId: string | undefined) {
       toast({ title: 'Email sent', description: 'Check your inbox for the password reset link.' });
       return true;
     } catch (error) {
-      console.error('Error sending password reset:', error);
+      logger.error('error', 'Error sending password reset', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to send password reset email', variant: 'destructive' });
       return false;
     }

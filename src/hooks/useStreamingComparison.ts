@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { useApiKeys, ApiKeyConfig } from '@/components/ApiKeysSettings';
 
 interface TokenUsage {
@@ -117,7 +118,7 @@ export function useStreamingComparison() {
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        console.error('Streaming error:', error);
+        logger.error('api', 'Streaming error', { error: (error as Error).message });
       }
     } finally {
       setIsLoading(false);

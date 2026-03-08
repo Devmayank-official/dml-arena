@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { User } from '@supabase/supabase-js';
 
 interface TokenUsage {
@@ -101,7 +102,7 @@ export function useCommunityFeed() {
 
       setComparisons(mappedComparisons);
     } catch (error) {
-      console.error('Error fetching community feed:', error);
+      logger.error('error', 'Error fetching community feed', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load community feed',
@@ -190,7 +191,7 @@ export function useCommunityFeed() {
         ));
       }
     } catch (error) {
-      console.error('Error voting:', error);
+      logger.error('error', 'Error voting', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to save vote',

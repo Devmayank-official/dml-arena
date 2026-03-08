@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { DeepModeSettings } from '@/components/DeepModeToggle';
+import { logger } from '@/lib/logger';
 
 interface RoundResponse {
   round: number;
@@ -119,14 +120,14 @@ export function useDeepDebate() {
                     break;
                 }
               } catch (e) {
-                console.error('Error parsing SSE data:', e);
+                logger.error('error', 'Error parsing SSE data', { error: e instanceof Error ? e.message : 'Unknown' });
               }
             }
           }
         }
       }
     } catch (err) {
-      console.error('Deep debate error:', err);
+      logger.error('debate', 'Deep debate error', { error: err instanceof Error ? err.message : 'Unknown' });
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       if (timerRef.current) {

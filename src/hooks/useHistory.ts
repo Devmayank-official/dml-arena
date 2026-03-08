@@ -1,97 +1,199 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * useHistory hook
+ * SKILL.md §6.1: Migrated to TanStack Query for state management
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/constants';
 import type { ModelResponse, ComparisonHistory, DebateHistory, Vote, DeepModeSettings, RoundResponse } from '@/types';
+
+interface HistoryData {
+  comparisons: ComparisonHistory[];
+  debates: DebateHistory[];
+  votes: Vote[];
+}
+
+async function fetchHistoryData(userId: string): Promise<HistoryData> {
+  const [compRes, debRes, votesRes] = await Promise.all([
+    supabase.from('comparison_history').select('*').order('created_at', { ascending: false }).limit(50),
+    supabase.from('debate_history').select('*').order('created_at', { ascending: false }).limit(50),
+    supabase.from('response_votes').select('*'),
+  ]);
+
+  const comparisons: ComparisonHistory[] = (compRes.data || []).map(item => ({
+    id: item.id,
+    query: item.query,
+    responses: item.responses as unknown as ModelResponse[],
+    created_at: item.created_at,
+  }));
+
+  const debates: DebateHistory[] = (debRes.data || []).map(item => ({
+    id: item.id,
+    query: item.query,
+    models: item.models,
+    settings: item.settings as unknown as DeepModeSettings,
+    round_responses: item.round_responses as unknown as RoundResponse[],
+    final_answer: item.final_answer,
+    total_rounds: item.total_rounds,
+    elapsed_time: item.elapsed_time,
+    created_at: item.created_at,
+  }));
+
+  const votes: Vote[] = (votesRes.data || []).map(item => ({
+    id: item.id,
+    history_id: item.history_id,
+    history_type: item.history_type as 'comparison' | 'debate',
+    model_id: item.model_id,
+    vote_type: item.vote_type as 'up' | 'down',
+  }));
+
+  return { comparisons, debates, votes };
+}
 
 export function useHistory(enabled: boolean) {
   const { user } = useAuth();
-  const [comparisonHistory, setComparisonHistory] = useState<ComparisonHistory[]>([]);
-  const [debateHistory, setDebateHistory] = useState<DebateHistory[]>([]);
-  const [votes, setVotes] = useState<Vote[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchHistory = useCallback(async () => {
-    if (!enabled || !user) {
-      setComparisonHistory([]);
-      setDebateHistory([]);
-      setVotes([]);
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const [compRes, debRes, votesRes] = await Promise.all([
-        supabase.from('comparison_history').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('debate_history').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('response_votes').select('*'),
-      ]);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: user ? queryKeys.history.comparisons(user.id) : ['history', 'none'],
+    queryFn: () => (user ? fetchHistoryData(user.id) : Promise.resolve({ comparisons: [], debates: [], votes: [] })),
+    enabled: enabled && !!user,
+    staleTime: 60_000, // 1 minute
+  });
 
-      if (compRes.data) {
-        setComparisonHistory(compRes.data.map(item => ({
-          id: item.id,
-          query: item.query,
-          responses: item.responses as unknown as ModelResponse[],
-          created_at: item.created_at,
-        })));
-      }
-      if (debRes.data) {
-        setDebateHistory(debRes.data.map(item => ({
-          id: item.id,
-          query: item.query,
-          models: item.models,
-          settings: item.settings as unknown as DeepModeSettings,
-          round_responses: item.round_responses as unknown as RoundResponse[],
-          final_answer: item.final_answer,
-          total_rounds: item.total_rounds,
-          elapsed_time: item.elapsed_time,
-          created_at: item.created_at,
-        })));
-      }
-      if (votesRes.data) {
-        setVotes(votesRes.data.map(item => ({
-          id: item.id,
-          history_id: item.history_id,
-          history_type: item.history_type as 'comparison' | 'debate',
-          model_id: item.model_id,
-          vote_type: item.vote_type as 'up' | 'down',
-        })));
-      }
-    } catch (error) {
-      console.error('Error fetching history:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [enabled, user]);
+  const comparisonHistory = data?.comparisons || [];
+  const debateHistory = data?.debates || [];
+  const votes = data?.votes || [];
 
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  const saveComparison = async (query: string, responses: ModelResponse[]): Promise<string | null> => {
-    if (!enabled || !user) return null;
-    
-    try {
+  const saveComparisonMutation = useMutation({
+    mutationFn: async ({ query, responses }: { query: string; responses: ModelResponse[] }) => {
+      if (!user) throw new Error('Not authenticated');
+      
       const { data, error } = await supabase
         .from('comparison_history')
-        .insert({ query, responses: responses as any, user_id: user.id })
+        .insert([{ query, responses: JSON.parse(JSON.stringify(responses)), user_id: user.id }])
         .select()
         .single();
 
       if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.history.comparisons(user.id) });
+      }
+    },
+    onError: (error) => {
+      logger.error('comparison', 'Failed to save comparison', { error: error instanceof Error ? error.message : 'Unknown' });
+    },
+  });
+
+  const saveDebateMutation = useMutation({
+    mutationFn: async (params: {
+      query: string;
+      models: string[];
+      settings: DeepModeSettings;
+      roundResponses: RoundResponse[];
+      finalAnswer: string | null;
+      totalRounds: number;
+      elapsedTime: number;
+    }) => {
+      if (!user) throw new Error('Not authenticated');
       
-      const newItem: ComparisonHistory = {
-        id: data.id,
-        query: data.query,
-        responses: data.responses as unknown as ModelResponse[],
-        created_at: data.created_at,
-      };
-      setComparisonHistory(prev => [newItem, ...prev]);
-      return data.id;
-    } catch (error) {
-      console.error('Error saving comparison:', error);
+      const { data, error } = await supabase
+        .from('debate_history')
+        .insert([{
+          query: params.query,
+          models: params.models,
+          settings: JSON.parse(JSON.stringify(params.settings)),
+          round_responses: JSON.parse(JSON.stringify(params.roundResponses)),
+          final_answer: params.finalAnswer,
+          total_rounds: params.totalRounds,
+          elapsed_time: params.elapsedTime,
+          user_id: user.id,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.history.comparisons(user.id) });
+      }
+    },
+    onError: (error) => {
+      logger.error('debate', 'Failed to save debate', { error: error instanceof Error ? error.message : 'Unknown' });
+    },
+  });
+
+  const voteMutation = useMutation({
+    mutationFn: async ({ historyId, historyType, modelId, voteType }: {
+      historyId: string;
+      historyType: 'comparison' | 'debate';
+      modelId: string;
+      voteType: 'up' | 'down';
+    }) => {
+      const existingVote = votes.find(v => v.history_id === historyId && v.model_id === modelId);
+
+      if (existingVote) {
+        if (existingVote.vote_type === voteType) {
+          await supabase.from('response_votes').delete().eq('id', existingVote.id);
+          return { action: 'removed', voteId: existingVote.id };
+        } else {
+          await supabase.from('response_votes').update({ vote_type: voteType }).eq('id', existingVote.id);
+          return { action: 'updated', voteId: existingVote.id, voteType };
+        }
+      } else {
+        const { data, error } = await supabase
+          .from('response_votes')
+          .insert({ history_id: historyId, history_type: historyType, model_id: modelId, vote_type: voteType, user_id: user?.id })
+          .select()
+          .single();
+        if (error) throw error;
+        return { action: 'created', data };
+      }
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.history.comparisons(user.id) });
+      }
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to save vote', variant: 'destructive' });
+    },
+  });
+
+  const clearHistoryMutation = useMutation({
+    mutationFn: async () => {
+      await Promise.all([
+        supabase.from('comparison_history').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('debate_history').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        supabase.from('response_votes').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+      ]);
+    },
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.history.comparisons(user.id) });
+      }
+      toast({ title: 'History cleared', description: 'All saved history has been removed.' });
+    },
+    onError: (error) => {
+      logger.error('error', 'Failed to clear history', { error: error instanceof Error ? error.message : 'Unknown' });
+    },
+  });
+
+  const saveComparison = async (query: string, responses: ModelResponse[]): Promise<string | null> => {
+    if (!enabled || !user) return null;
+    try {
+      const result = await saveComparisonMutation.mutateAsync({ query, responses });
+      return result.id;
+    } catch {
       return null;
     }
   };
@@ -106,40 +208,12 @@ export function useHistory(enabled: boolean) {
     elapsedTime: number
   ): Promise<string | null> => {
     if (!enabled || !user) return null;
-    
     try {
-      const { data, error } = await supabase
-        .from('debate_history')
-        .insert({
-          query,
-          models,
-          settings: settings as any,
-          round_responses: roundResponses as any,
-          final_answer: finalAnswer,
-          total_rounds: totalRounds,
-          elapsed_time: elapsedTime,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      const newItem: DebateHistory = {
-        id: data.id,
-        query: data.query,
-        models: data.models,
-        settings: data.settings as unknown as DeepModeSettings,
-        round_responses: data.round_responses as unknown as RoundResponse[],
-        final_answer: data.final_answer,
-        total_rounds: data.total_rounds,
-        elapsed_time: data.elapsed_time,
-        created_at: data.created_at,
-      };
-      setDebateHistory(prev => [newItem, ...prev]);
-      return data.id;
-    } catch (error) {
-      console.error('Error saving debate:', error);
+      const result = await saveDebateMutation.mutateAsync({
+        query, models, settings, roundResponses, finalAnswer, totalRounds, elapsedTime
+      });
+      return result.id;
+    } catch {
       return null;
     }
   };
@@ -150,47 +224,7 @@ export function useHistory(enabled: boolean) {
     modelId: string,
     voteType: 'up' | 'down'
   ) => {
-    try {
-      const existingVote = votes.find(
-        v => v.history_id === historyId && v.model_id === modelId
-      );
-
-      if (existingVote) {
-        if (existingVote.vote_type === voteType) {
-          await supabase.from('response_votes').delete().eq('id', existingVote.id);
-          setVotes(prev => prev.filter(v => v.id !== existingVote.id));
-        } else {
-          await supabase
-            .from('response_votes')
-            .update({ vote_type: voteType })
-            .eq('id', existingVote.id);
-          setVotes(prev =>
-            prev.map(v =>
-              v.id === existingVote.id ? { ...v, vote_type: voteType } : v
-            )
-          );
-        }
-      } else {
-        const { data, error } = await supabase
-          .from('response_votes')
-          .insert({ history_id: historyId, history_type: historyType, model_id: modelId, vote_type: voteType, user_id: user?.id })
-          .select()
-          .single();
-
-        if (error) throw error;
-        const newVote: Vote = {
-          id: data.id,
-          history_id: data.history_id,
-          history_type: data.history_type as 'comparison' | 'debate',
-          model_id: data.model_id,
-          vote_type: data.vote_type as 'up' | 'down',
-        };
-        setVotes(prev => [...prev, newVote]);
-      }
-    } catch (error) {
-      console.error('Error voting:', error);
-      toast({ title: 'Error', description: 'Failed to save vote', variant: 'destructive' });
-    }
+    await voteMutation.mutateAsync({ historyId, historyType, modelId, voteType });
   };
 
   const getVote = (historyId: string, modelId: string): 'up' | 'down' | null => {
@@ -227,25 +261,13 @@ export function useHistory(enabled: boolean) {
       if (error) throw error;
       return data.share_code;
     } catch (error) {
-      console.error('Error sharing:', error);
+      logger.error('error', 'Failed to share result', { error: error instanceof Error ? error.message : 'Unknown' });
       return null;
     }
   };
 
   const clearHistory = async () => {
-    try {
-      await Promise.all([
-        supabase.from('comparison_history').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('debate_history').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('response_votes').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-      ]);
-      setComparisonHistory([]);
-      setDebateHistory([]);
-      setVotes([]);
-      toast({ title: 'History cleared', description: 'All saved history has been removed.' });
-    } catch (error) {
-      console.error('Error clearing history:', error);
-    }
+    await clearHistoryMutation.mutateAsync();
   };
 
   return {
@@ -261,6 +283,6 @@ export function useHistory(enabled: boolean) {
     getVoteCounts,
     shareResult,
     clearHistory,
-    refetch: fetchHistory,
+    refetch,
   };
 }

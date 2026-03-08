@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
+import { logger } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription, FREE_PLAN_LIMITS } from '@/hooks/useSubscription';
@@ -117,7 +118,7 @@ export default function Settings() {
 
       toast({ title: 'Export complete', description: 'Your data has been downloaded.' });
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('error', 'Export error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to export data', variant: 'destructive' });
     } finally {
       setIsExporting(false);
@@ -150,7 +151,7 @@ export default function Settings() {
       setDeleteConfirmText('');
       setUnderstandConfirmation(false);
     } catch (error) {
-      console.error('Clear history error:', error);
+      logger.error('error', 'Clear history error', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({ title: 'Error', description: 'Failed to clear history', variant: 'destructive' });
     } finally {
       setIsClearing(false);

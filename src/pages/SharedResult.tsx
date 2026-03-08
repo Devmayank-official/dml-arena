@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { ResponseCard } from '@/components/ResponseCard';
@@ -130,7 +131,7 @@ export default function SharedResult() {
           });
         }
       } catch (err) {
-        console.error('Error fetching shared result:', err);
+        logger.error('error', 'Error fetching shared result', { error: err instanceof Error ? err.message : 'Unknown' });
         setError('Failed to load the shared result.');
       } finally {
         setLoading(false);
