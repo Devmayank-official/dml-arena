@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { useApiKeys, ApiKeyConfig } from '@/components/ApiKeysSettings';
 
 interface TokenUsage {
