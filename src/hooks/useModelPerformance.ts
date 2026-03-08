@@ -54,7 +54,7 @@ export function useModelPerformance() {
 
       setRecords(data || []);
     } catch (err) {
-      console.error('Error in fetchPerformance:', err);
+      logger.error('error', 'Error in fetchPerformance', { error: err instanceof Error ? err.message : 'Unknown' });
     } finally {
       setIsLoading(false);
     }
