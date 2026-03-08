@@ -117,7 +117,7 @@ export default function CommunityComparison() {
         setVoteCounts(counts);
       }
     } catch (error) {
-      console.error('Error fetching comparison:', error);
+      logger.error('error', 'Error fetching comparison', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load comparison',
