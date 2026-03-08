@@ -109,8 +109,8 @@ export function useHistory(enabled: boolean) {
         .insert([{
           query: params.query,
           models: params.models,
-          settings: params.settings as unknown as Record<string, unknown>,
-          round_responses: params.roundResponses as unknown as Record<string, unknown>[],
+          settings: JSON.parse(JSON.stringify(params.settings)),
+          round_responses: JSON.parse(JSON.stringify(params.roundResponses)),
           final_answer: params.finalAnswer,
           total_rounds: params.totalRounds,
           elapsed_time: params.elapsedTime,
