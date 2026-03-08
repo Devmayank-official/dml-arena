@@ -136,7 +136,7 @@ export function useProfile(userId: string | undefined) {
         modelsUsed: allModels.size,
       });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('error', 'Error fetching profile', { error: error instanceof Error ? error.message : 'Unknown' });
       toast({
         title: 'Error',
         description: 'Failed to load profile',
