@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Sparkles, ChevronLeft, HelpCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/features/auth";
+import { useSubscription } from "@/features/subscription";
 import { motion } from "framer-motion";
 import { PaymentButton } from "@/components/PaymentButton";
 import { BillingCycle } from "@/hooks/useRazorpay";
