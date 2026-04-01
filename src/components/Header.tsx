@@ -7,9 +7,9 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { MobileNav } from '@/components/MobileNav';
 import { useTourContext } from '@/contexts/TourContext';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/features/subscription';
 import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
