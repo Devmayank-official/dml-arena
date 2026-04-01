@@ -7,7 +7,7 @@ import { ExportDropdown } from '@/components/ExportDropdown';
 import { QuickReRun } from '@/components/QuickReRun';
 import { CategoryBadge } from '@/components/CategoryBadge';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { useFavorites } from '@/hooks/useFavorites';
+import { useFavorites } from '@/features/history';
 import type { StreamingResponse } from '@/hooks/useStreamingComparison';
 import type { QueryCategory } from '@/lib/queryCategories';
 
