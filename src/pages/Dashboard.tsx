@@ -1,8 +1,8 @@
 import { AppLayout } from '@/components/AppLayout';
-import { useAuth } from '@/hooks/useAuth';
-import { useModelPerformance } from '@/hooks/useModelPerformance';
-import { useHistory } from '@/hooks/useHistory';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/features/auth';
+import { useModelPerformance } from '@/features/leaderboard';
+import { useHistory } from '@/features/history';
+import { useSubscription } from '@/features/subscription';
 import { getModelById } from '@/lib/models';
 import { getCategoryInfo, QUERY_CATEGORIES, type QueryCategory } from '@/lib/queryCategories';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
