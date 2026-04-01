@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, History, Users, Settings, Lock } from 'lucide-react';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/features/subscription';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 

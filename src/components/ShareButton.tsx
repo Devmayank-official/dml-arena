@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/features/subscription';
 import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,

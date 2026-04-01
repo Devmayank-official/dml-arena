@@ -16,7 +16,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/features/subscription';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';

@@ -12,8 +12,8 @@ import {
   Pin,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useSubscription } from '@/hooks/useSubscription';
-import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/features/subscription';
+import { useAuth } from '@/features/auth';
 import { usePinnedResponses } from '@/hooks/usePinnedResponses';
 import { cn } from '@/lib/utils';
 import {

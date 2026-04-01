@@ -8,12 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppLayout } from '@/components/AppLayout';
 import { BackgroundEffects } from '@/components/BackgroundEffects';
-import { StatsOverview } from '@/components/leaderboard/StatsOverview';
-import { ModelRankingTable } from '@/components/leaderboard/ModelRankingTable';
-import { PerformanceCharts } from '@/components/leaderboard/PerformanceCharts';
-import { CommunityFeed } from '@/components/community/CommunityFeed';
-import { useLeaderboardData } from '@/hooks/useLeaderboardData';
-import { useCommunityFeed } from '@/hooks/useCommunityFeed';
+import { StatsOverview, ModelRankingTable, PerformanceCharts, useLeaderboardData } from '@/features/leaderboard';
+import { CommunityFeed, useCommunityFeed } from '@/features/community';
 import {
   Select,
   SelectContent,

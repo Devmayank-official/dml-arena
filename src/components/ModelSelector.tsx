@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/hooks/useSubscription';
+import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/features/subscription';
 import { Badge } from '@/components/ui/badge';
 import { ModelPresetSelector } from '@/components/ModelPresetSelector';
 import { ScrollArea } from '@/components/ui/scroll-area';

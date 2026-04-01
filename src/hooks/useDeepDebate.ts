@@ -32,7 +32,7 @@ export function useDeepDebate() {
   const [lastQuery, setLastQuery] = useState<string>('');
   const [lastSettings, setLastSettings] = useState<DeepModeSettings | null>(null);
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
   const startDebate = useCallback(async (message: string, models: string[], settings: DeepModeSettings) => {

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { exportData, ExportFormat, EXPORT_FORMATS, ExportData } from '@/lib/exportUtils';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/features/subscription';
 import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,

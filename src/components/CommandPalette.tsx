@@ -26,8 +26,8 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/features/auth';
+import { useSubscription } from '@/features/subscription';
 import { useTourContext } from '@/contexts/TourContext';
 import { useTheme } from '@/components/ThemeProvider';
 

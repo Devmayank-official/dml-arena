@@ -14,7 +14,7 @@ import { BackgroundEffects } from '@/components/BackgroundEffects';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AppLayout } from '@/components/AppLayout';
-import { useModelPerformance } from '@/hooks/useModelPerformance';
+import { useModelPerformance } from '@/features/leaderboard';
 import { getModelById } from '@/lib/models';
 import {
   BarChart,

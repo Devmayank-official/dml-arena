@@ -1,14 +1,12 @@
 import { useEffect } from 'react';
 import { useArenaStore, useSettingsStore } from '@/stores';
-import { useDeepDebate } from '@/hooks/useDeepDebate';
-import { useHistory } from '@/hooks/useHistory';
+import { useDeepDebate, useDebateRatings } from '@/features/debate';
+import { useHistory, useRatings } from '@/features/history';
+import { useModelPerformance } from '@/features/leaderboard';
+import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/features/subscription';
 import { useStreamingComparison } from '@/hooks/useStreamingComparison';
-import { useModelPerformance } from '@/hooks/useModelPerformance';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useConversation } from '@/hooks/useConversation';
-import { useRatings } from '@/hooks/useRatings';
-import { useDebateRatings } from '@/hooks/useDebateRatings';
-import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
 import { classifyQuery } from '@/lib/queryCategories';
 import { ALL_MODELS } from '@/lib/models';
