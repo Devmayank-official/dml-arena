@@ -4,8 +4,7 @@ import { AlertTriangle, X, Crown, Zap, ArrowUpRight, Clock, Timer } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS } from '@/features/subscription';
-import type { RateLimitInfo } from '@/hooks/useSubscription';
+import { useSubscription, FREE_PLAN_LIMITS, PRO_PLAN_LIMITS, type RateLimitInfo } from '@/features/subscription';
 import { useNavigate } from 'react-router-dom';
 
 interface RateLimitBarProps {

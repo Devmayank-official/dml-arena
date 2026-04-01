@@ -8,6 +8,7 @@ export {
   PRO_PLAN_LIMITS,
   type SubscriptionPlan,
   type Subscription,
+  type RateLimitInfo,
 } from '@/hooks/useSubscription';
 export { useRazorpay, type BillingCycle } from '@/hooks/useRazorpay';
 export { PaymentButton } from '@/components/PaymentButton';
