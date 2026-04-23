@@ -23,12 +23,14 @@ interface ComparisonData {
   created_at: string;
 }
 
+import type { DeepModeSettings, RoundResponse } from '@/types';
+
 interface DebateData {
   id: string;
   query: string;
   models: string[];
-  settings: any;
-  round_responses: any[];
+  settings: DeepModeSettings;
+  round_responses: RoundResponse[];
   final_answer: string | null;
   total_rounds: number;
   elapsed_time: number;
@@ -122,8 +124,8 @@ export default function SharedResult() {
             id: debate.id,
             query: debate.query,
             models: debate.models,
-            settings: debate.settings,
-            round_responses: debate.round_responses as unknown as any[],
+            settings: debate.settings as unknown as DeepModeSettings,
+            round_responses: debate.round_responses as unknown as RoundResponse[],
             final_answer: debate.final_answer,
             total_rounds: debate.total_rounds,
             elapsed_time: debate.elapsed_time,

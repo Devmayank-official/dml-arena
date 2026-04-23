@@ -9,11 +9,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { getModelById } from '@/lib/models';
+import type { ModelResponse } from '@/types';
 
 interface ComparisonItem {
   id: string;
   query: string;
-  responses: any[];
+  responses: ModelResponse[];
   created_at: string;
 }
 
@@ -59,7 +60,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
         id: c.id,
         query: c.query,
         created_at: c.created_at,
-        responses: c.responses.map((r: any) => ({
+        responses: c.responses.map((r) => ({
           model_id: r.model,
           model_name: getModelName(r.model),
           response: r.response,
@@ -93,8 +94,8 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
     ];
 
     comparisons.forEach(c => {
-      const models = c.responses.map((r: any) => getModelName(r.model)).join('; ');
-      const summary = c.responses.map((r: any) => 
+      const models = c.responses.map((r) => getModelName(r.model)).join('; ');
+      const summary = c.responses.map((r) => 
         `${getModelName(r.model)}: ${r.response?.slice(0, 100) || r.error || 'N/A'}...`
       ).join(' | ');
       rows.push([
@@ -151,7 +152,7 @@ export function BulkExport({ comparisons, debates }: BulkExportProps) {
         lines.push(`*Created: ${new Date(c.created_at).toLocaleString()}*`);
         lines.push('');
         
-        c.responses.forEach((r: any) => {
+        c.responses.forEach((r) => {
           lines.push(`#### ${getModelName(r.model)}`);
           lines.push('');
           if (r.error) {
