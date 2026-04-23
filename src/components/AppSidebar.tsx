@@ -16,6 +16,7 @@ import { useSubscription } from '@/features/subscription';
 import { useAuth } from '@/features/auth';
 import { usePinnedResponses } from '@/hooks/usePinnedResponses';
 import { cn } from '@/lib/utils';
+import { ROUTES } from '@/constants';
 import {
   Sidebar,
   SidebarContent,
@@ -39,15 +40,15 @@ interface NavItem {
 }
 
 const mainNavItems: NavItem[] = [
-  { label: 'Home', href: '/chat', icon: Home },
-  { label: 'Dashboard', href: '/chat/dashboard', icon: LayoutDashboard },
-  { label: 'Insights', href: '/chat/insights', icon: BarChart3 },
-  { label: 'History', href: '/chat/history', icon: History },
-  { label: 'Community', href: '/chat/community', icon: Users, requiresPro: true },
+  { label: 'Home', href: ROUTES.CHAT, icon: Home },
+  { label: 'Dashboard', href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { label: 'Insights', href: ROUTES.INSIGHTS, icon: BarChart3 },
+  { label: 'History', href: ROUTES.HISTORY, icon: History },
+  { label: 'Community', href: ROUTES.COMMUNITY, icon: Users, requiresPro: true },
 ];
 
 const settingsNavItems: NavItem[] = [
-  { label: 'Settings', href: '/chat/settings', icon: Settings },
+  { label: 'Settings', href: ROUTES.SETTINGS, icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -117,7 +118,7 @@ export function AppSidebar() {
               {mainNavItems.map(renderNavItem)}
               {renderNavItem({ 
                 label: 'Pinned', 
-                href: '/chat/pinned', 
+                href: ROUTES.PINNED, 
                 icon: Pin, 
                 badge: pinnedCount 
               })}
@@ -132,7 +133,7 @@ export function AppSidebar() {
               {settingsNavItems.map(renderNavItem)}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/pricing">
+                  <Link to={ROUTES.PRICING}>
                     <CreditCard className="h-4 w-4" />
                     <span>Pricing</span>
                   </Link>

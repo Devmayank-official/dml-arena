@@ -30,6 +30,7 @@ import { useAuth } from '@/features/auth';
 import { useSubscription } from '@/features/subscription';
 import { useTourContext } from '@/contexts/TourContext';
 import { useTheme } from '@/components/ThemeProvider';
+import { ROUTES } from '@/constants';
 
 interface CommandItem {
   id: string;
@@ -72,7 +73,7 @@ export function CommandPalette() {
       id: 'home',
       label: 'Go to Home',
       icon: Home,
-      action: () => navigate('/chat'),
+      action: () => navigate(ROUTES.CHAT),
       shortcut: 'G H',
       group: 'navigation',
     },
@@ -80,7 +81,7 @@ export function CommandPalette() {
       id: 'dashboard',
       label: 'Go to Dashboard',
       icon: LayoutDashboard,
-      action: () => navigate('/chat/dashboard'),
+      action: () => navigate(ROUTES.DASHBOARD),
       shortcut: 'G D',
       group: 'navigation',
     },
@@ -88,7 +89,7 @@ export function CommandPalette() {
       id: 'insights',
       label: 'Go to Insights',
       icon: BarChart3,
-      action: () => navigate('/chat/insights'),
+      action: () => navigate(ROUTES.INSIGHTS),
       shortcut: 'G I',
       group: 'navigation',
     },
@@ -96,7 +97,7 @@ export function CommandPalette() {
       id: 'history',
       label: 'Go to History',
       icon: History,
-      action: () => navigate('/chat/history'),
+      action: () => navigate(ROUTES.HISTORY),
       shortcut: 'G R',
       group: 'navigation',
     },
@@ -104,7 +105,7 @@ export function CommandPalette() {
       id: 'community',
       label: 'Go to Community',
       icon: Users,
-      action: () => navigate('/chat/community'),
+      action: () => navigate(ROUTES.COMMUNITY),
       shortcut: 'G C',
       group: 'navigation',
       requiresPro: true,
@@ -113,7 +114,7 @@ export function CommandPalette() {
       id: 'pinned',
       label: 'Go to Pinned',
       icon: Pin,
-      action: () => navigate('/chat/pinned'),
+      action: () => navigate(ROUTES.PINNED),
       shortcut: 'G P',
       group: 'navigation',
     },
@@ -121,7 +122,7 @@ export function CommandPalette() {
       id: 'settings',
       label: 'Go to Settings',
       icon: Settings,
-      action: () => navigate('/chat/settings'),
+      action: () => navigate(ROUTES.SETTINGS),
       shortcut: 'G S',
       group: 'navigation',
     },
@@ -129,7 +130,7 @@ export function CommandPalette() {
       id: 'pricing',
       label: 'View Pricing',
       icon: CreditCard,
-      action: () => navigate('/pricing'),
+      action: () => navigate(ROUTES.PRICING),
       group: 'navigation',
     },
   ];
@@ -139,7 +140,7 @@ export function CommandPalette() {
       id: 'new-comparison',
       label: 'New Comparison',
       icon: Sparkles,
-      action: () => navigate('/chat'),
+      action: () => navigate(ROUTES.CHAT),
       shortcut: 'N',
       group: 'actions',
     },
