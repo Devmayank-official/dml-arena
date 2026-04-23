@@ -14,6 +14,7 @@ import { PageSkeleton, LandingSkeleton } from "@/components/PageSkeleton";
 import { logger } from "@/lib/logger";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { SkipToContent } from "@/components/a11y/SkipToContent";
 
 // Lazy-loaded pages — each becomes its own chunk
 const Landing = lazy(() => import("./pages/Landing"));
@@ -56,6 +57,7 @@ function AppContent() {
   
   return (
     <>
+      <SkipToContent />
       <Routes>
         {/* Landing page - public */}
         <Route path="/" element={<RouteBoundary skeleton={<LandingSkeleton />}><Landing /></RouteBoundary>} />
