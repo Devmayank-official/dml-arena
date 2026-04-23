@@ -47,9 +47,12 @@ function validateEnv(): EnvConfig {
     const errorMessages = result.error.errors
       .map((err) => `  - ${err.path.join('.')}: ${err.message}`)
       .join('\n');
-    
+
+    // Use native console here ONLY because the logger itself depends on this validated config.
+    // SKILL.md §6.2 allows bootstrap-level console use prior to logger initialization.
+    // eslint-disable-next-line no-console
     console.error('❌ Invalid environment variables:\n' + errorMessages);
-    
+
     // In development, throw an error to make it obvious
     if (import.meta.env.DEV) {
       throw new Error('Invalid environment variables. Check console for details.');
