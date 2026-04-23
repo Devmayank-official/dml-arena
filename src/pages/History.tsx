@@ -588,7 +588,7 @@ export default function History() {
                               {item.type === 'comparison' && item.responses.length > 0 && (
                                 <ExportDropdown
                                   query={item.query}
-                                  responses={item.responses as unknown as ModelResponse[]}
+                                  responses={item.responses as ModelResponse[]}
                                   createdAt={item.created_at}
                                 />
                               )}
@@ -597,7 +597,7 @@ export default function History() {
                             {/* Responses */}
                             {item.type === 'comparison' && item.responses.length > 0 && (
                               <ResponseGrid
-                                responses={item.responses as unknown as ModelResponse[]}
+                                responses={item.responses as ModelResponse[]}
                                 loadingModels={[]}
                                 historyId={item.id}
                                 showVoting
