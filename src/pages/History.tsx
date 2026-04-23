@@ -28,7 +28,6 @@ import { useSettings } from '@/features/settings';
 import { ResponseGrid } from '@/components/ResponseGrid';
 import { ShareButton } from '@/components/ShareButton';
 import { ExportDropdown } from '@/components/ExportDropdown';
-import type { ModelResponse } from '@/types';
 import { BulkExport } from '@/components/BulkExport';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { getModelById, ALL_MODELS, PROVIDER_INFO, type ModelProvider } from '@/lib/models';
