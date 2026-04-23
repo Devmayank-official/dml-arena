@@ -87,7 +87,7 @@ export default function History() {
       query: h.query,
       responses: h.responses,
       created_at: h.created_at,
-      models: (h.responses as any[]).map(r => r.model),
+      models: (h.responses as Array<{ model: string }>).map(r => r.model),
     }));
 
     const debates = history.debateHistory.map(h => ({
@@ -587,7 +587,7 @@ export default function History() {
                               {item.type === 'comparison' && item.responses.length > 0 && (
                                 <ExportDropdown
                                   query={item.query}
-                                  responses={item.responses as any}
+                                  responses={item.responses as never}
                                   createdAt={item.created_at}
                                 />
                               )}
@@ -596,7 +596,7 @@ export default function History() {
                             {/* Responses */}
                             {item.type === 'comparison' && item.responses.length > 0 && (
                               <ResponseGrid
-                                responses={item.responses as any}
+                                responses={item.responses as never}
                                 loadingModels={[]}
                                 historyId={item.id}
                                 showVoting
@@ -605,14 +605,14 @@ export default function History() {
                               />
                             )}
 
-                            {item.type === 'debate' && (item as any).finalAnswer && (
+                            {item.type === 'debate' && item.finalAnswer && (
                               <div className="p-4 rounded-lg bg-card border border-border">
                                 <h4 className="font-medium mb-2 flex items-center gap-2">
                                   <Brain className="h-4 w-4 text-accent" />
                                   Final Synthesized Answer
                                 </h4>
                                 <p className="text-sm text-muted-foreground line-clamp-6">
-                                  {(item as any).finalAnswer}
+                                  {item.finalAnswer}
                                 </p>
                               </div>
                             )}

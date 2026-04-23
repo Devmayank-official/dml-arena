@@ -14,12 +14,19 @@ interface ModelResponse {
   tokens?: TokenUsage;
 }
 
+export interface DebateRound {
+  round: number;
+  model: string;
+  response: string;
+  duration?: number;
+}
+
 export interface ExportData {
   query: string;
   responses: ModelResponse[];
   createdAt?: string;
   type?: 'comparison' | 'debate';
-  debateRounds?: any[];
+  debateRounds?: DebateRound[];
   finalAnswer?: string;
 }
 

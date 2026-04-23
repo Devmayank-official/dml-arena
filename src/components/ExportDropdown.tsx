@@ -39,7 +39,7 @@ interface ExportDropdownProps {
   createdAt?: string;
   disabled?: boolean;
   type?: 'comparison' | 'debate';
-  debateRounds?: any[];
+  debateRounds?: import('@/lib/exportUtils').DebateRound[];
   finalAnswer?: string;
 }
 

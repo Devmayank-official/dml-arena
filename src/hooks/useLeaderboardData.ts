@@ -116,7 +116,7 @@ export function useLeaderboardData(): LeaderboardData {
 
       // Process debate history
       debates.forEach(debate => {
-        const roundResponses = debate.round_responses as unknown as any[];
+        const roundResponses = debate.round_responses as unknown as Array<{ model: string; duration?: number }>;
         const date = new Date(debate.created_at).toLocaleDateString();
         
         roundResponses.forEach(roundResp => {

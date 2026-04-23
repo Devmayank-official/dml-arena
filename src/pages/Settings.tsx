@@ -239,7 +239,7 @@ export default function Settings() {
                       <Crown className="h-5 w-5 text-yellow-500" />
                       <span className="font-semibold">Pro Plan</span>
                       <span className="text-muted-foreground">
-                        {(subscription as any)?.billing_cycle === 'yearly' ? '₹15,300/yr' : '₹1,500/mo'}
+                        {subscription?.billing_cycle === 'yearly' ? '₹15,300/yr' : '₹1,500/mo'}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
@@ -261,19 +261,19 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {(subscription as any)?.subscription_end && (
+                  {subscription?.subscription_end && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {(subscription as any)?.cancelled_at 
-                          ? `Pro until: ${new Date((subscription as any).subscription_end).toLocaleDateString()}`
-                          : `Next billing: ${new Date((subscription as any).subscription_end).toLocaleDateString()}`
+                        {subscription?.cancelled_at 
+                          ? `Pro until: ${new Date(subscription.subscription_end).toLocaleDateString()}`
+                          : `Next billing: ${new Date(subscription.subscription_end).toLocaleDateString()}`
                         }
                       </span>
                     </div>
                   )}
 
-                  {(subscription as any)?.cancelled_at ? (
+                  {subscription?.cancelled_at ? (
                     <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm">
                       Subscription cancelled. Pro features remain active until the end of your billing period.
                     </div>

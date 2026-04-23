@@ -44,7 +44,17 @@ export function PerformanceCharts({ modelStats }: PerformanceChartsProps) {
     engagement: maxValues.upvotes > 0 ? (model.upvotes / maxValues.upvotes) * 100 : 0,
   }));
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayloadEntry {
+    name?: string;
+    value?: number | string;
+    dataKey?: string;
+  }
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: TooltipPayloadEntry[];
+    label?: string;
+  }
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">

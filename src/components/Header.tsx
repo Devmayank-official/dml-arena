@@ -11,6 +11,7 @@ import { useAuth } from '@/features/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/features/subscription';
 import { Badge } from '@/components/ui/badge';
+import { ROUTES } from '@/constants';
 import {
   Tooltip,
   TooltipContent,
@@ -53,7 +54,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
             {/* Mobile Hamburger Menu */}
             <MobileNav />
             
-            <Link to="/chat" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity min-w-0" data-tour="logo">
+            <Link to={ROUTES.CHAT} className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity min-w-0" data-tour="logo">
               <div className="relative shrink-0">
                 <div className="absolute inset-0 blur-xl bg-primary/30 rounded-full" />
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -84,21 +85,21 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
             </span>
             
             {/* Desktop Navigation Links - Hidden on mobile */}
-            <Link to="/chat/dashboard" className="hidden md:block">
+            <Link to={ROUTES.DASHBOARD} className="hidden md:block">
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden lg:inline">Dashboard</span>
               </Button>
             </Link>
             
-            <Link to="/chat/insights" className="hidden md:block">
+            <Link to={ROUTES.INSIGHTS} className="hidden md:block">
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden lg:inline">Insights</span>
               </Button>
             </Link>
             
-            <Link to="/chat/history" className="hidden md:block">
+            <Link to={ROUTES.HISTORY} className="hidden md:block">
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 sm:h-9 px-2 sm:px-3">
                 <History className="h-4 w-4" />
                 <span className="hidden lg:inline">History</span>
@@ -107,7 +108,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
             
             {/* Community - Desktop only */}
             {canAccessCommunity ? (
-              <Link to="/chat/community" data-tour="community" className="hidden md:block">
+              <Link to={ROUTES.COMMUNITY} data-tour="community" className="hidden md:block">
                 <Button variant="outline" size="sm" className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3">
                   <Users className="h-4 w-4 text-primary" />
                   <span className="hidden lg:inline">Community</span>
@@ -160,7 +161,7 @@ export function Header({ onToggleSidebar, sidebarOpen }: HeaderProps) {
               user ? (
                 <ProfileDropdown user={user} onSignOut={handleSignOut} />
               ) : (
-                <Link to="/auth">
+                <Link to={ROUTES.AUTH}>
                   <Button variant="default" size="sm" className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3 bg-gradient-to-r from-primary to-accent">
                     <LogIn className="h-4 w-4" />
                     <span className="hidden sm:inline">Sign In</span>
