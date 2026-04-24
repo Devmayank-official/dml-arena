@@ -2,7 +2,7 @@
 
 # DML Arena
 
-### Compare AI models side-by-side. Ask once, see how each one thinks.
+### DML Arena: The Open-Source LLM Battleground
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -20,34 +20,59 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Why DML Arena](#why-dml-arena)
-3. [Feature Matrix](#feature-matrix)
-4. [Architecture](#architecture)
-5. [Tech Stack](#tech-stack)
-6. [Quick Start](#quick-start)
-7. [Project Structure](#project-structure)
-8. [Engineering Standards](#engineering-standards)
-9. [Testing](#testing)
-10. [Internationalization](#internationalization)
-11. [Accessibility](#accessibility)
-12. [Security](#security)
-13. [Performance Targets](#performance-targets)
-14. [Deployment](#deployment)
-15. [Self-Hosting](#self-hosting)
-16. [Roadmap](#roadmap)
-17. [Contributing](#contributing)
-18. [License](#license)
-19. [Credits](#credits)
+2. [Screenshots](#screenshots)
+3. [Why DML Arena](#why-dml-arena)
+4. [Feature Matrix](#feature-matrix)
+5. [Architecture](#architecture)
+6. [Tech Stack](#tech-stack)
+7. [Quick Start](#quick-start)
+8. [Project Structure](#project-structure)
+9. [Engineering Standards](#engineering-standards)
+10. [Testing](#testing)
+11. [Internationalization](#internationalization)
+12. [Accessibility](#accessibility)
+13. [Security](#security)
+14. [Performance Targets](#performance-targets)
+15. [Deployment](#deployment)
+16. [Self-Hosting](#self-hosting)
+17. [Roadmap](#roadmap)
+18. [Contributing](#contributing)
+19. [License](#license)
+20. [Credits](#credits)
 
 ---
 
 ## Overview
 
-**DML Arena** is a production-grade, enterprise-ready platform for **multi-model AI comparison**. Users ask one question and receive responses from many leading models — GPT-5, Gemini 2.5/3 Pro, and more — rendered side-by-side in real time so they can evaluate quality, latency, cost, and reasoning style at a glance.
+> DML Arena is an enterprise-grade, open-source evaluation platform architected for rigorous multi-model LLM benchmarking. By providing a unified interface for simultaneous, real-time side-by-side inference, DML Arena eliminates the opacity of vendor-specific model performance. The platform features an advanced "Deep Mode" multi-agent debate engine that autonomously critiques and synthesizes reasoning across iterations, alongside granular telemetry for latency, token efficiency, and comparative success metrics. Built on an opinionated, high-security React and Supabase architecture, DML Arena is engineered to empower organizations with the empirical data required to validate AI reasoning capabilities and optimize model selection for mission-critical workloads.
 
-It also includes a **Deep Mode** debate engine where multiple models critique each other's reasoning across multiple rounds before synthesizing a final answer, and a forthcoming **1v1 Blind Battle Mode** for crowd-sourced ELO rankings.
+---
 
-> Built by **DML Labs** as the reference implementation of a modern, opinionated, fully-typed React stack — secure by default, observable, accessible, and ready for the enterprise.
+## Screenshots
+
+<div align="center">
+
+### Landing Page
+<img src="./screenshots/landing-page.png" alt="DML Arena landing page — Battle of the AI Titans hero" width="100%" />
+
+### Home — Multi-Model Compare
+<img src="./screenshots/home.png" alt="DML Arena home with model selector, Deep Mode toggle, and chat input" width="100%" />
+
+### Dashboard — Personal Analytics
+<img src="./screenshots/dashboard.png" alt="DML Arena dashboard with query totals, response time, success rate, and category breakdown" width="100%" />
+
+### Community Feed & Leaderboard
+<img src="./screenshots/community.png" alt="DML Arena community feed with shared comparisons and voting" width="100%" />
+
+### Mobile — Landing & Pricing
+
+<p>
+  <img src="./screenshots/landing-mobile.png" alt="DML Arena mobile landing page" width="45%" />
+  &nbsp;&nbsp;
+  <img src="./screenshots/pricing-mobile.png" alt="DML Arena mobile pricing page" width="45%" />
+</p>
+
+</div>
 
 ---
 
@@ -76,7 +101,7 @@ It also includes a **Deep Mode** debate engine where multiple models critique ea
 - 📥 **Export** — Markdown, JSON, PDF, and side-by-side diff exports.
 
 ### Platform
-- 🔐 **Auth** — Email/password + Google OAuth via Lovable Cloud.
+- 🔐 **Auth** — Email/password + Google OAuth via Supabase Auth.
 - 💳 **Billing** — Razorpay integration (monthly/yearly), free + pro tiers, usage metering.
 - 🔔 **Notifications & Realtime** — Supabase Realtime channels.
 - 📱 **PWA** — Installable, offline-aware, with a native bottom nav on mobile.
@@ -97,7 +122,7 @@ It also includes a **Deep Mode** debate engine where multiple models critique ea
 └───────────────────────┬───────────────────────────────────────────┘
                         │ HTTPS · Realtime (WebSocket)
 ┌───────────────────────▼───────────────────────────────────────────┐
-│                     Lovable Cloud (Supabase)                      │
+│                        Supabase Backend                           │
 │  Postgres + RLS · Auth · Storage · Realtime · Edge Functions      │
 └───┬───────────────┬─────────────────┬─────────────────┬───────────┘
     │               │                 │                 │
@@ -109,8 +134,8 @@ It also includes a **Deep Mode** debate engine where multiple models critique ea
     └───────────────┴─────────────────┘
                     │
               ┌─────▼─────┐
-              │ Lovable   │
-              │ AI Gateway│  → OpenAI · Google · others
+              │ OpenRouter │ → OpenAI · Google · Anthropic · others
+              │ AI Gateway │   (system fallback for base models)
               └───────────┘
 ```
 
@@ -122,7 +147,7 @@ It also includes a **Deep Mode** debate engine where multiple models critique ea
 - **DOMPurify on every rendered Markdown surface.**
 - **Structured logger** — no raw `console.*` outside bootstrap.
 
-See [`PRD.md`](./PRD.md), [`ENTERPRISE_PLAN.md`](./ENTERPRISE_PLAN.md), and [`SKILL.md`](./SKILL.md) for the full doctrine.
+See [`SELF_HOSTING.md`](./SELF_HOSTING.md) for deployment details.
 
 ---
 
@@ -137,8 +162,8 @@ See [`PRD.md`](./PRD.md), [`ENTERPRISE_PLAN.md`](./ENTERPRISE_PLAN.md), and [`SK
 | Client state | **Zustand** | Tiny, no boilerplate, devtools. |
 | Forms | **React Hook Form + Zod** | One source of truth for validation. |
 | Routing | **React Router 6** | Lazy routes, nested layouts. |
-| Backend | **Lovable Cloud (Supabase)** | Postgres, Auth, Storage, Realtime, Edge Functions. |
-| AI | **Lovable AI Gateway** | One key, many models (OpenAI, Google, …). |
+| Backend | **Supabase** | Postgres, Auth, Storage, Realtime, Edge Functions. |
+| AI | **OpenRouter + AI Gateway** | Bring-your-own-key or system fallback across many providers. |
 | Payments | **Razorpay** | India-first, multi-currency, subscriptions. |
 | Sanitization | **DOMPurify + marked** | Safe Markdown rendering. |
 | i18n | **i18next + react-i18next** | English baseline, drop-in locales. |
@@ -214,13 +239,14 @@ src/
 supabase/
 ├── functions/         # Edge functions (Deno)
 └── migrations/        # SQL migrations (read-only)
+screenshots/           # UI reference screenshots used in this README
 ```
 
 ---
 
 ## Engineering Standards
 
-DML Arena enforces the rules in [`SKILL.md`](./SKILL.md):
+DML Arena enforces strict production guardrails across the codebase:
 
 - ✅ **No `any`.** Strict types or Zod-inferred types.
 - ✅ **No raw `console.*`** outside bootstrap — use the structured `logger`.
@@ -297,7 +323,7 @@ DML Arena targets **WCAG 2.1 AA** and **Lighthouse Accessibility ≥ 90**.
 
 - 🔒 **Row-Level Security** on every table; roles isolated in `user_roles`.
 - 🛡️ **DOMPurify** sanitizes every Markdown render path.
-- 🔑 **Secrets** live in Lovable Cloud / Supabase Vault — never in code, never in `localStorage`.
+- 🔑 **Secrets** live in Supabase Vault / Edge Function secrets — never in code, never in `localStorage`.
 - ✅ **Zod-validated** environment, request bodies, and form input.
 - 🧱 **CSP-friendly** build, no inline scripts.
 - 🪪 **JWT-verified edge functions** for any user-scoped action.
@@ -325,11 +351,8 @@ Hit via: route-level code splitting, lazy pages, semantic skeleton fallbacks, im
 
 ## Deployment
 
-### Lovable (one-click)
-Open the project in [Lovable](https://lovable.dev/) and click **Share → Publish**. Custom domains are configured under **Project → Settings → Domains**.
-
 ### Self-hosted
-Any static host works for the frontend (Vercel, Netlify, Cloudflare Pages, S3+CloudFront, nginx). The backend is provisioned via Lovable Cloud or your own Supabase project. See [`SELF_HOSTING.md`](./SELF_HOSTING.md).
+Any static host works for the frontend (Vercel, Netlify, Cloudflare Pages, S3+CloudFront, nginx). The backend is provisioned on your own Supabase project. See [`SELF_HOSTING.md`](./SELF_HOSTING.md).
 
 ```bash
 npm run build
@@ -346,15 +369,13 @@ DML Arena is **fully self-hostable**. You'll need:
 2. Edge functions deployed (`supabase functions deploy`).
 3. Frontend `.env` pointing at your project.
 4. Razorpay keys *(optional, only if you enable billing)*.
-5. AI provider keys *(via Lovable AI Gateway, or wire your own in the edge functions)*.
+5. AI provider keys *(OpenRouter recommended, or wire your own in the edge functions)*.
 
 Step-by-step in [`SELF_HOSTING.md`](./SELF_HOSTING.md).
 
 ---
 
 ## Roadmap
-
-See [`ENTERPRISE_PLAN.md`](./ENTERPRISE_PLAN.md) for the full enterprise roadmap.
 
 - [x] **Phase 1** — Foundation hardening (Zod, TanStack Query, types, error boundaries).
 - [x] **Phase 2** — Feature-based architecture, Zustand stores, decomposition.
@@ -368,10 +389,9 @@ See [`ENTERPRISE_PLAN.md`](./ENTERPRISE_PLAN.md) for the full enterprise roadmap
 
 We love contributions. The short version:
 
-1. Read [`SKILL.md`](./SKILL.md) — these are non-negotiable.
-2. Open an issue describing the change *before* large PRs.
-3. `npx vitest run && npm run lint && npm run build` must pass.
-4. Keep PRs small, focused, and well-described.
+1. Open an issue describing the change *before* large PRs.
+2. `npx vitest run && npm run lint && npm run build` must pass.
+3. Keep PRs small, focused, and well-described.
 
 ```bash
 git checkout -b feat/your-thing
@@ -409,6 +429,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 **Developed by [DML Labs](https://github.com/Devmayank-official)**
 Lead Engineer · [**@Devmayank-official**](https://github.com/Devmayank-official)
 
-Built with ❤️, [Lovable](https://lovable.dev/), and an absurd amount of TypeScript.
+Built with ❤️ and an absurd amount of TypeScript.
 
 </div>

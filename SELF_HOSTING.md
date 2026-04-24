@@ -1,4 +1,4 @@
-# 🚀 DML Arena — Self-Hosting Guide
+# 🚀 DML Arena — The Open-Source LLM Battleground Self-Hosting Guide
 
 > **Complete guide to deploy DML Arena on your own infrastructure.**
 > Covers Vercel, Netlify, Docker, and self-hosted Supabase configurations.
@@ -73,7 +73,7 @@
 ┌─────────────────────▼────────────────────────────────┐
 │              EXTERNAL APIs                            │
 │  • OpenRouter (55+ AI models)                         │
-│  • Lovable AI Gateway (fallback for base models)      │
+│  • AI Gateway (fallback for base models)              │
 │  • Razorpay (payments)                                │
 └──────────────────────────────────────────────────────┘
 ```
@@ -116,7 +116,7 @@ supabase functions deploy razorpay-cancel-subscription
 ### 4. Set Secrets
 
 ```bash
-supabase secrets set LOVABLE_API_KEY=your_lovable_key
+supabase secrets set AI_GATEWAY_API_KEY=your_ai_gateway_key
 supabase secrets set OPENROUTER_API_KEY=your_openrouter_key
 supabase secrets set RAZORPAY_KEY_ID=rzp_live_XXXX
 supabase secrets set RAZORPAY_KEY_SECRET=XXXX
@@ -794,7 +794,7 @@ These are **private** and must be set via `supabase secrets set`:
 | `SUPABASE_URL` | ✅ Auto | Supabase | API base URL |
 | `SUPABASE_ANON_KEY` | ✅ Auto | Supabase | Anonymous client key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Auto | Supabase | Admin operations (bypasses RLS) |
-| `LOVABLE_API_KEY` | ⚠️ Optional | Lovable | Fallback AI gateway (base models only) |
+| `AI_GATEWAY_API_KEY` | ⚠️ Optional | AI Gateway provider | Fallback AI gateway (base models only) |
 | `OPENROUTER_API_KEY` | ✅ Recommended | [openrouter.ai](https://openrouter.ai) | Access 55+ AI models |
 | `RAZORPAY_KEY_ID` | ⚠️ Optional | [razorpay.com](https://razorpay.com) | Payment Key ID |
 | `RAZORPAY_KEY_SECRET` | ⚠️ Optional | [razorpay.com](https://razorpay.com) | Payment Key Secret |
@@ -905,7 +905,7 @@ The `dml-arena-stream` edge function routes model requests in this priority:
 1. **User's OpenRouter key** (from Settings → API Keys)
 2. **User's provider-specific key** (e.g., OpenAI, Anthropic)
 3. **System OpenRouter key** (`OPENROUTER_API_KEY` secret)
-4. **Lovable AI Gateway** (fallback, limited to ~9 base models)
+4. **System AI Gateway** (fallback, limited to ~9 base models)
 
 ### Supported Providers & Models
 

@@ -1,7 +1,7 @@
 {
   "name": "DML Arena",
   "short_name": "DML Arena",
-  "description": "Compare multiple AI models side by side with real-time streaming responses",
+  "description": "DML Arena: The Open-Source LLM Battleground",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0f1a",

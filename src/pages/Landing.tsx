@@ -86,7 +86,7 @@ export function Landing() {
           >
             <Badge variant="secondary" className="mb-6">
               <Sparkles className="w-3 h-3 mr-1" />
-              DML Arena — AI Models Side by Side
+              DML Arena: The Open-Source LLM Battleground
             </Badge>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
               <span className="gradient-text">Battle of the</span>
@@ -94,7 +94,7 @@ export function Landing() {
               <span className="text-foreground">AI Titans</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Compare responses from GPT-5, Gemini 3, and more in real-time. 
+              watch top-tier AI models (Claude Opus 4.6, GPT-5.3, Gemini 3.1 Pro) fight for the best response 
               Discover which AI thinks best for your needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

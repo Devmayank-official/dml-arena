@@ -17,7 +17,8 @@ const MAX_MESSAGE_LENGTH = 10000;
 const MAX_MODELS_COUNT = 10;
 const MAX_CONTEXT_MESSAGES = 20;
 
-// Models available with system keys (Lovable AI Gateway supports these)
+// Models available with system keys (the fallback AI Gateway supports these)
+const AI_GATEWAY_URL = Deno.env.get("AI_GATEWAY_URL") ?? "https://ai.gateway.lovable.dev/v1/chat/completions";
 const SYSTEM_AVAILABLE_MODELS = [
   'openai/gpt-5',
   'openai/gpt-5.1',
@@ -140,10 +141,10 @@ interface ApiKeyConfig {
 }
 
 // Determine which API to use based on available keys
-// Priority: User OpenRouter > User Provider Key > System OpenRouter > System Lovable
-function getApiConfig(model: string, userKeys?: ApiKeyConfig): { 
-  apiUrl: string; 
-  apiKey: string; 
+// Priority: User OpenRouter > User Provider Key > System OpenRouter > System AI Gateway
+function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
+  apiUrl: string;
+  apiKey: string;
   modelId: string;
   provider: string;
   isUserKey: boolean;
@@ -208,18 +209,18 @@ function getApiConfig(model: string, userKeys?: ApiKeyConfig): {
     };
   }
 
-  // Priority 4: Lovable AI Gateway (fallback) - limited to SYSTEM_AVAILABLE_MODELS
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  // Priority 4: System AI Gateway (fallback) - limited to SYSTEM_AVAILABLE_MODELS
+  const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY") ?? Deno.env.get("LOVABLE_API_KEY");
   return {
-    apiUrl: 'https://ai.gateway.lovable.dev/v1/chat/completions',
-    apiKey: LOVABLE_API_KEY || '',
+    apiUrl: AI_GATEWAY_URL,
+    apiKey: AI_GATEWAY_API_KEY || '',
     modelId: model,
-    provider: 'lovable',
+    provider: 'ai-gateway',
     isUserKey: false,
   };
 }
 
-// Check if system can handle the model (has OpenRouter or model is in Lovable's list)
+// Check if system can handle the model (has OpenRouter or model is in the gateway's list)
 function canSystemHandleModel(model: string): boolean {
   const SYSTEM_OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY");
   if (SYSTEM_OPENROUTER_KEY) {
@@ -544,7 +545,7 @@ serve(async (req) => {
     const hasSystemOpenRouter = !!Deno.env.get("OPENROUTER_API_KEY");
     
     if (!hasUserOpenRouter && !hasSystemOpenRouter) {
-      // Only Lovable gateway available - filter to supported models
+      // Only fallback AI gateway available - filter to supported models
       selectedModels = selectedModels.filter((m: string) => SYSTEM_AVAILABLE_MODELS.includes(m));
     }
 
@@ -555,10 +556,10 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY") ?? Deno.env.get("LOVABLE_API_KEY");
     const SYSTEM_OPENROUTER_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    
-    if (!LOVABLE_API_KEY && !SYSTEM_OPENROUTER_KEY && !userKeys?.openrouter && !Object.values(userKeys || {}).some(Boolean)) {
+
+    if (!AI_GATEWAY_API_KEY && !SYSTEM_OPENROUTER_KEY && !userKeys?.openrouter && !Object.values(userKeys || {}).some(Boolean)) {
       console.error("No API keys configured");
       return new Response(
         JSON.stringify({ error: 'AI service not configured. Please add your API keys in Settings.' }),
@@ -568,10 +569,10 @@ serve(async (req) => {
 
     console.log(`User ${userId} (${userPlan}) requesting ${selectedModels.length} models`);
 
-    const keySource = userKeys?.openrouter ? 'OpenRouter (user)' : 
+    const keySource = userKeys?.openrouter ? 'OpenRouter (user)' :
                      Object.values(userKeys || {}).some(Boolean) ? 'User API keys' :
                      SYSTEM_OPENROUTER_KEY ? 'OpenRouter (system)' :
-                     'Lovable AI Gateway';
+                     'System AI Gateway';
     console.log(`Starting streaming for ${selectedModels.length} models via ${keySource} with ${validContextMessages.length} context messages`);
 
     const encoder = new TextEncoder();

@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// AI Gateway endpoint (OpenAI-compatible). Configure via AI_GATEWAY_URL secret to override.
+const AI_GATEWAY_URL = Deno.env.get("AI_GATEWAY_URL") ?? "https://ai.gateway.lovable.dev/v1/chat/completions";
+
 const AVAILABLE_MODELS = [
   'openai/gpt-5',
   'openai/gpt-5-mini',
@@ -33,7 +36,7 @@ async function queryModel(model: string, message: string, apiKey: string): Promi
   try {
     console.log(`Querying model: ${model}`);
     
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -109,9 +112,9 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
+    const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY") ?? Deno.env.get("LOVABLE_API_KEY");
+    if (!AI_GATEWAY_API_KEY) {
+      console.error("AI_GATEWAY_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -119,10 +122,10 @@ serve(async (req) => {
     }
 
     console.log(`Processing query for ${selectedModels.length} models: ${selectedModels.join(', ')}`);
-    
+
     // Query all selected models in parallel
     const results = await Promise.all(
-      selectedModels.map((model: string) => queryModel(model, message, LOVABLE_API_KEY))
+      selectedModels.map((model: string) => queryModel(model, message, AI_GATEWAY_API_KEY))
     );
 
     console.log(`All ${results.length} models responded`);

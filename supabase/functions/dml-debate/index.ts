@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// AI Gateway endpoint (OpenAI-compatible). Configure via AI_GATEWAY_URL secret to override.
+const AI_GATEWAY_URL = Deno.env.get("AI_GATEWAY_URL") ?? "https://ai.gateway.lovable.dev/v1/chat/completions";
+
 // Input validation limits
 const MAX_MESSAGE_LENGTH = 10000;
 const MAX_MODELS_COUNT = 6;
@@ -96,7 +99,7 @@ function getPersonaPrompt(persona: ExpertPersona, customPersona?: string): strin
 
 async function queryModel(model: string, messages: { role: string; content: string }[], apiKey: string): Promise<string> {
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -229,8 +232,8 @@ serve(async (req) => {
 
         console.log(`User ${userId} (pro) starting Deep Mode debate`);
 
-        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-        if (!LOVABLE_API_KEY) {
+        const AI_GATEWAY_API_KEY = Deno.env.get("AI_GATEWAY_API_KEY") ?? Deno.env.get("LOVABLE_API_KEY");
+        if (!AI_GATEWAY_API_KEY) {
           sendEvent('error', { message: 'AI service not configured' });
           controller.close();
           return;
@@ -267,7 +270,7 @@ serve(async (req) => {
           const response = await queryModel(model, [
             { role: 'system', content: systemParts.join(' ') },
             { role: 'user', content: message }
-          ], LOVABLE_API_KEY);
+          ], AI_GATEWAY_API_KEY);
           
           sendEvent('round_response', { round: 1, model, response });
           return { model, response };
@@ -305,7 +308,7 @@ serve(async (req) => {
             const response = await queryModel(model, [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt }
-            ], LOVABLE_API_KEY);
+            ], AI_GATEWAY_API_KEY);
             
             sendEvent('round_response', { round, model, response });
             return { model, response };
@@ -347,7 +350,7 @@ Format your response as:
 ## Key Contributors
 [Which models provided the most valuable insights and why]` },
           { role: 'user', content: `Original question: ${message}\n\nComplete ${style} debate transcript:\n${allDebateContent}\n\nSynthesize the best possible answer from this debate.` }
-        ], LOVABLE_API_KEY);
+        ], AI_GATEWAY_API_KEY);
 
         sendEvent('final_answer', { 
           answer: finalAnswer,
