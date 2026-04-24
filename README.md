@@ -329,7 +329,7 @@ DML Arena targets **WCAG 2.1 AA** and **Lighthouse Accessibility ≥ 90**.
 - 🪪 **JWT-verified edge functions** for any user-scoped action.
 - 📜 **Structured audit logging** via the `logger` (no PII leaks).
 
-Report a vulnerability: open a private security advisory on GitHub or email **security@dmllabs.dev**.
+Report a vulnerability: open a private security advisory on GitHub.
 
 ---
 
